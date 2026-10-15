@@ -1,0 +1,154 @@
+p,
+span {
+    color: #2D3A2E;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+body {
+    background-color: #e0fce0;
+    margin: 0;
+}
+
+.topBanner {
+    background-color: #B7E4C7;
+    width: 100%;
+    height: 60px;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+}
+
+#gameName {
+    font-size: 40px;
+    padding-left: 1.5vh;
+}
+
+#day,
+#time,
+#quota,
+.zDolDisplay {
+    font-size: 24px;
+    padding-left: 32.5vh;
+}
+
+.skills {
+    background-color: #B7E4C7;
+    height: 45%;
+    width: 35vh;
+    left: 0px;
+    top: 60px;
+    border: 5px solid #E2EAE3;
+    position: absolute;
+    box-sizing: border-box;
+    border-bottom: none;
+}
+
+#skillLabel {
+    top: -2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+.upgrades {
+    background-color: #B7E4C7;
+    height: calc(55vh - 60px);
+    width: 35vh;
+    top: calc(45% + 60px);
+    left: 0px;
+    border: 5px solid #E2EAE3;
+    position: absolute;
+    box-sizing: border-box;
+}
+
+#upgradeLabel {
+    top: -2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+.actions {
+    background-color: #B7E4C7;
+    height: calc(100% - 60px - 10px);
+    width: 35vh;
+    top: 60px;
+    right: 0px;
+    position: absolute;
+    border: 5px solid #E2EAE3;
+}
+
+#getShipment {
+    border-radius: 3px;
+    width: 24vh;
+    height: 8vh;
+    color: #2D3A2E;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 18px;
+    background-color: #D8F3DC;
+    position: absolute;
+    left: 50%;
+    top: 2vh;
+    transform: translateX(-50%);
+}
+
+#stealButton {
+    border-radius: 3px;
+    width: 24vh;
+    height: 8vh;
+    color: #2D3A2E;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 18px;
+    background-color: #D8F3DC;
+    position: absolute;
+    left: 50%;
+    top: calc(2vh + 8vh + 4vh);
+    transform: translateX(-50%);
+}
+
+#sleepButton {
+    border-radius: 3px;
+    width: 24vh;
+    height: 8vh;
+    color: #2D3A2E;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 18px;
+    background-color: #D8F3DC;
+    position: absolute;
+    left: 50%;
+    top: calc(2vh + 8vh + 4vh + 8vh + 4vh);
+    transform: translateX(-50%);
+}
+
+#cupboard {
+    width: 24vh;
+    height: 24vh;
+    position: absolute;
+    bottom: 29vh;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.historyBox {
+    width: 100%;
+    height: 24vh;
+    background-color: #a6dcb7;
+    position: absolute;
+    bottom: 3vh;
+    right: 0vh;
+}
+
+#history {
+    position: absolute;
+    left: 0.5vh;
+    top: -1.5vh;
+    font-size: 12px;
+    color: #2D3A2E;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}

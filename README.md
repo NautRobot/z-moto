@@ -1,5 +1,5 @@
 // UZD - United Zeke Dollar
-// each shipment has a higher chance for nicer cars
+// each shipment has a random chance for cars
 // you can set any price
 // buy chance is based on charisma and car price
 // shipments cost money
@@ -44,3 +44,8 @@ Damage when stealing cars
 Buy shipment, next day you get it
 Buy 1 a day MAX
 */
+
+// 10 irl minute days
+// 24 hour in game day
+// 60 minute 
+// update every 25 seconds

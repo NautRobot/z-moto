@@ -1,14 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="js/game.js"></script>
+    <script src="js/game.js" type="module"></script>
+    <link rel="stylesheet" href="css/styles.css">
     <title>Z-Moto</title>
 </head>
+
 <body>
-    <div class="important-panel">
-        <img src="assets/cupboard.png">
+    <!-- Top Banner -->
+    <div class="topBanner">
+        <p id="gameName">Z-Moto</p>
+        <p id="day">Day: <span id="dayCount">0</span></p>
+        <p id="time">Time: <span id="hours">00</span>:00</span></p>
+        <div class="zDolDisplay">
+            <img src="assets/z-dol.png">
+            <span id="z-dols">10</span>
+        </div>
+        <p id="quota">Quota: <span id="quotaAmt">0</span>/1</p>
+    </div>
+
+    <!-- Skill Upgrades -->
+    <div class="skills">
+        <p id="skillLabel">Skill Points: <span id="skillPoints">0</span></p>
+    </div>
+
+    <!-- Upgrades -->
+    <div class="upgrades">
+        <p id="upgradeLabel">Upgrades</p>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="actions">
+        <button id="getShipment" onclick="populateShipment()">Order Shipment</button>
+        <button id="stealButton">Steal</button>
+        <button id="sleepButton">Sleep</button>
+        <img id="cupboard" src="assets/cupboard.png">
+        <div class="historyBox">
+            <p id="history">Day 0 [00:00] You began.</p>
+        </div>
     </div>
 </body>
+
 </html>
