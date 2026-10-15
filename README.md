@@ -49,3 +49,15 @@ Buy 1 a day MAX
 // 24 hour in game day
 // 60 minute 
 // update every 25 seconds
+
+FAILURE RATES
+L-   (0-10%)
+L    (10-20%)
+L+   (20-30%)
+M-   (30-40%)
+M    (40-50%)
+M+   (50-60%)
+H-   (60-70%)
+H    (70-80%)
+H+   (80-90%)
+I    (90-100%)

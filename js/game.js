@@ -89,7 +89,7 @@ function updateAll() {
                 
                 pendingShipments.splice(i, 1); 
                 
-                alert("Boss, the shipment just arrived!");
+                alert("Zeke, the shipment just arrived!");
             }
         }
     }
@@ -97,12 +97,17 @@ function updateAll() {
 
 function populateShipment() {
     if (currentShipment.length >= 5 * shipmentSize) {
-        alert("Where do I put it boss? (Store cars in the garage to make room.)");
+        alert("Where do I put it Zeke? (Store cars in the garage to make room.)");
         return;
     }
 
     if (balance < shipmentPrice) {
-        alert("You're a little short, Boss.. (Get more money!)");
+        alert("You're a little short, Zeke.. (Get more money!)");
+        return;
+    }
+
+    if (pendingShipments.length > 0) {
+        alert("Hey Zeke, you can't order more yet.");
         return;
     }
 
@@ -119,4 +124,19 @@ function populateShipment() {
     updateAll();
 }
 
+function unpackCar() {
+    console.log(currentShipment);
+    let random = Math.random() * currentShipment.length;
+    garage.push(currentShipment.at(random));
+    currentShipment.splice(random, 1);
+
+    console.log(garage);
+}
+
+function skipTime() {
+    hour += 1;
+}
+
 window.populateShipment = populateShipment;
+window.unpackCar = unpackCar;
+window.skipTime = skipTime;
