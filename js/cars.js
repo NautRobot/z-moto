@@ -28,8 +28,8 @@ export const cars = [
     make: "Audi",
     defaultRarity: "Rare",
     models: [
-      "A3", "A4", "A4 allroad", "A5", "A6", "A7", "A8",
-      "Q3", "Q4 e-tron", "Q4 Sportback e-tron", "Q5", "Q5 Sportback", "Q6 e-tron", "Q7", "Q8", "Q8 e-tron", "Q8 Sportback e-tron",
+      "A3", "A4", "A5", "A6", "A7", "A8",
+      "Q3", "Q4 e-tron", "Q5", "Q6 e-tron", "Q7", "Q8",
       { name: "S3", rarity: "Rare" },
       { name: "S4", rarity: "Rare" },
       { name: "S5", rarity: "Rare" },
@@ -37,11 +37,8 @@ export const cars = [
       { name: "S7", rarity: "Rare" },
       { name: "S8", rarity: "Rare" },
       { name: "SQ5", rarity: "Rare" },
-      { name: "SQ5 Sportback", rarity: "Rare" },
       { name: "SQ6 e-tron", rarity: "Rare" },
       { name: "SQ8", rarity: "Rare" },
-      { name: "SQ8 e-tron", rarity: "Rare" },
-      { name: "SQ8 Sportback e-tron", rarity: "Rare" },
       { name: "RS 3", rarity: "Epic" },
       { name: "RS 5", rarity: "Epic" },
       { name: "RS 6 Avant", rarity: "Epic" },
@@ -131,7 +128,7 @@ export const cars = [
   },
   {
     make: "Fiat",
-    defaultRarity: "Common",
+    defaultRarity: "Mythic",
     models: ["500e"]
   },
   {
