@@ -17,6 +17,18 @@ Strength - Fit more cars in the garage (But slightly damage them)
 */
 
 /*
+SIDE EFFECTS:
+
+Stealth - None
+Handiness - Cars are slightly less damaged when stealing
+Strength - Damage them slightly
+Networking - Media critiques vehicles - Slightly less sell value
+Expertise - None
+Charisma - None
+no quota d1-3
+*/
+
+/*
 BUYABLES:
 Garage Upgrade
 Shipment of Cars

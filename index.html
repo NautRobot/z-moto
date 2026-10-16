@@ -13,23 +13,27 @@
     <!-- Top Banner -->
     <div class="topBanner">
         <p id="gameName">Z-Moto</p>
-        <p id="day">Day: <span id="dayCount">0</span></p>
-        <p id="time">Time: <span id="hours">00</span>:00</span></p>
+        <p id="day">Day: <span id="dayCount">1</span></p>
+        <p id="time">Time: <span id="hours">08</span>:00</p>
         <div class="zDolDisplay">
             <img src="assets/z-dol.png">
             <span id="z-dols">10</span>
         </div>
-        <p id="quota">Quota: <span id="quotaAmt">0</span>/1</p>
+        <p id="quota">Quota: <span id="quota-status">None (Days 1-3)</span></p>
+        <label class="pause-setting"><input id="pause-when-hidden" type="checkbox" checked>Pause when away</label>
     </div>
 
     <!-- Skill Upgrades -->
     <div class="skills">
         <p id="skillLabel">Skill Points: <span id="skillPoints">0</span></p>
+        <div class="skill-list" id="skill-list"></div>
     </div>
 
     <!-- Upgrades -->
     <div class="upgrades">
-        <p id="upgradeLabel">Upgrades</p>
+        <p id="upgradeLabel">Buyables</p>
+        <div class="buyables-list" id="buyables-list"></div>
+        <p class="security-status" id="security-status" aria-live="polite"></p>
     </div>
 
     <!-- Action Bar -->
@@ -37,11 +41,96 @@
         <button id="getShipment" onclick="populateShipment()">Order Shipment</button>
         <button id="stealButton">Steal</button>
         <button id="sleepButton">Sleep</button>
-        <img id="cupboard" src="assets/cupboard.png" onclick="unpackCar()">
+        <img id="cupboard" src="assets/cupboard.png" alt="Unpack a delivered car" onclick="unpackCar()">
         <div class="historyBox">
-            <p id="history">Day 0 [00:00] You began.</p>
+            <p class="history-title">History</p>
+            <div id="history" aria-live="polite">
+                <p class="history-entry">Day 1 [08:00] You began.</p>
+            </div>
         </div>
     </div>
+
+    <!-- Garage -->
+    <section class="garage" aria-label="Garage">
+        <div class="garage-toolbar" aria-label="Garage filters and sorting">
+            <div class="sort-control">
+                <button class="icon-button" id="sort-menu-button" type="button" aria-label="Sort cars" aria-expanded="false" aria-controls="sort-menu" title="Sort cars">
+                    <span aria-hidden="true">⇅</span>
+                </button>
+                <div class="sort-menu" id="sort-menu" role="group" aria-label="Sort by" hidden>
+                    <button class="sort-option" type="button" data-sort="price-asc" aria-pressed="true">Price: Low to High</button>
+                    <button class="sort-option" type="button" data-sort="price-desc" aria-pressed="false">Price: High to Low</button>
+                    <button class="sort-option" type="button" data-sort="name-asc" aria-pressed="false">Name: A-Z</button>
+                    <button class="sort-option" type="button" data-sort="name-desc" aria-pressed="false">Name: Z-A</button>
+                </div>
+            </div>
+            <label>Make
+                <select id="garage-make-filter">
+                    <option value="">All makes</option>
+                </select>
+            </label>
+            <label>Model
+                <select id="garage-model-filter">
+                    <option value="">All models</option>
+                </select>
+            </label>
+        </div>
+        <div class="garage-list" id="garage-list" aria-live="polite"></div>
+        <template id="car-template">
+            <article class="car-display">
+                <button class="car-image-action" type="button" aria-label="Repair this car">
+                    <img class="car-image" alt="">
+                    <span class="repair-hint">Click image to repair</span>
+                </button>
+                <div class="car-details">
+                    <h2 class="car-name"></h2>
+                    <span class="car-rarity"></span>
+                </div>
+                <p class="car-stat">Durability <span></span></p>
+                <p class="car-price">Current listed price: <span></span></p>
+                <p class="car-recommended-price">Recommended price <span></span></p>
+                <div class="car-pricing">
+                    <input class="car-price-input" type="number" min="0" step="1" aria-label="New listed price" placeholder="New price">
+                    <button type="button">List</button>
+                </div>
+            </article>
+        </template>
+    </section>
+
+    <dialog class="theft-dialog" id="theft-dialog" aria-labelledby="theft-title">
+        <div class="theft-dialog-content">
+            <h2 id="theft-title">Choose a car to steal</h2>
+            <div class="theft-options" id="theft-options"></div>
+            <button id="close-theft-dialog" type="button">Close</button>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog" id="fine-dialog" aria-labelledby="fine-title">
+        <div class="notice-dialog-content">
+            <h2 id="fine-title">Caught</h2>
+            <p id="fine-message"></p>
+            <button id="fine-dismiss" type="button">Click to dismiss</button>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog" id="repair-dialog" aria-labelledby="repair-title">
+        <div class="notice-dialog-content">
+            <h2 id="repair-title">Repair?</h2>
+            <p id="repair-message"></p>
+            <div class="repair-dialog-actions">
+                <button id="repair-cancel" type="button">Cancel</button>
+                <button id="repair-confirm" type="button">Repair</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog" id="ending-dialog" aria-labelledby="ending-title">
+        <div class="notice-dialog-content">
+            <h2 id="ending-title"></h2>
+            <p id="ending-message"></p>
+            <div class="ending-actions">
+                <button id="ending-continue" type="button">Continue</button>
+                <button id="ending-restart" type="button">Restart</button>
+            </div>
+        </div>
+    </dialog>
 </body>
 
 </html>
