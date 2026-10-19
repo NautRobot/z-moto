@@ -1,6 +1,11 @@
 import { cars, RARITY_WEIGHTS } from './cars.js';
 
 let balance = 100;
+let owedBalance = 0;
+let debtDay = -1;
+let lastDebtReminderDay = -1;
+let restartingGame = false;
+
 let day = 1;
 let hour = 8;
 let baseShipmentSize = 2;
@@ -26,6 +31,7 @@ let totalSales = 0;
 let totalCaughtThefts = 0;
 let pendingArrestEnding = false;
 let sleepCooldownTimer;
+let interestTimer;
 let saleTimer;
 let shipmentOrderedDay = null;
 const seenEndings = new Set();
@@ -51,7 +57,7 @@ const SKILL_DETAILS = [
 const RISK_LEVELS = ["L-", "L", "L+", "M-", "M", "M+", "H-", "H", "H+", "I"];
 const BASE_GARAGE_CAPACITY = 3;
 const GOOD_ENDING_SALES = 16;
-const GOOD_ENDING_FUNDS = 1000;
+const GOOD_ENDING_FUNDS = 10000;
 const QUIT_ENDING_SKILL_LEVELS = 10;
 const ARREST_ENDING_CAUGHT = 3;
 const DAILY_SALES_QUOTA = 1;
@@ -61,6 +67,8 @@ const EXPERTISE_INTERVAL_REDUCTION_MS = 2_000;
 const MIN_GAME_HOUR_INTERVAL_MS = 5_000;
 const SALE_CHECK_INTERVAL_MS = 3_000;
 const SALE_TICK_CHANCE_FACTOR = 0.12;
+const SAVE_KEY = "z-moto-save";
+const SAVE_VERSION = 1;
 
 const RECOMMENDED_PRICES = {
     Common: 100,
@@ -159,8 +167,8 @@ function getBuyerChance(car) {
     const priceChance = 0.32 + skills.charisma * 0.04 + (priceRatio - 1) * 0.3;
     const conditionChance = getConditionMultiplier(car.durability);
     const rarityChance = RARITY_BUYER_FACTORS[car.rarity] || 0.75;
-    const chancePerSecond = priceChance * conditionChance * rarityChance * SALE_TICK_CHANCE_FACTOR;
-    return Math.max(0.005, Math.min(0.25, chancePerSecond));
+    const chancePerCheck = priceChance * conditionChance * rarityChance * SALE_TICK_CHANCE_FACTOR;
+    return Math.max(0.005, Math.min(0.25, chancePerCheck));
 }
 
 function getRandomCar() {
@@ -192,11 +200,183 @@ function recordHistory(message) {
     entry.textContent = `Day ${day} [${formatClock(hour)}] ${message}`;
     history.append(entry);
     history.scrollTop = history.scrollHeight;
+    saveGame();
+}
+
+function getSaveState() {
+    return {
+        version: SAVE_VERSION,
+        balance,
+        owedBalance,
+        debtDay,
+        lastDebtReminderDay,
+        day,
+        hour,
+        baseShipmentSize,
+        shipmentPrice,
+        currentShipment,
+        pendingShipments,
+        nextCarId,
+        skillPoints,
+        sortBy,
+        theftsToday,
+        securityLevel,
+        garageExpansion,
+        skillPointPurchases,
+        sleepAvailableAt,
+        gameEnded,
+        activeEndingKey,
+        endingTitle: document.getElementById("ending-title").textContent,
+        endingMessage: document.getElementById("ending-message").textContent,
+        pauseWhenHidden,
+        dailySales,
+        totalSales,
+        totalCaughtThefts,
+        pendingArrestEnding,
+        shipmentOrderedDay,
+        garage,
+        skills,
+        seenEndings: [...seenEndings],
+        history: [...document.querySelectorAll("#history .history-entry")].map(entry => entry.textContent)
+    };
+}
+
+function setSaveStatus(message) {
+    const status = document.getElementById("save-status");
+    if (status) {
+        status.textContent = message;
+    }
+}
+
+function saveGame() {
+    if (restartingGame) {
+        return;
+    }
+
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(getSaveState()));
+        setSaveStatus("Game saved automatically.");
+    } catch (error) {
+        setSaveStatus(`Could not save the game: ${error.message}`);
+    }
+}
+
+function loadGame() {
+    let savedState;
+    try {
+        const savedGame = localStorage.getItem(SAVE_KEY);
+        if (!savedGame) {
+            setSaveStatus("Autosave is on. No previous save found.");
+            return;
+        }
+
+        savedState = JSON.parse(savedGame);
+    } catch (error) {
+        setSaveStatus(`Could not load the saved game: ${error.message}`);
+        return;
+    }
+
+    const numericFields = [
+        "balance", "owedBalance", "debtDay", "lastDebtReminderDay", "day", "hour",
+        "baseShipmentSize", "shipmentPrice", "nextCarId", "skillPoints", "theftsToday",
+        "securityLevel", "garageExpansion", "skillPointPurchases", "sleepAvailableAt",
+        "dailySales", "totalSales", "totalCaughtThefts"
+    ];
+    if (!savedState || typeof savedState !== "object" || savedState.version !== SAVE_VERSION ||
+        numericFields.some(field => !Number.isFinite(savedState[field])) ||
+        typeof savedState.gameEnded !== "boolean" ||
+        typeof savedState.pauseWhenHidden !== "boolean" ||
+        typeof savedState.pendingArrestEnding !== "boolean" ||
+        (savedState.activeEndingKey !== null && typeof savedState.activeEndingKey !== "string") ||
+        typeof savedState.endingTitle !== "string" ||
+        typeof savedState.endingMessage !== "string" ||
+        (savedState.shipmentOrderedDay !== null && !Number.isFinite(savedState.shipmentOrderedDay)) ||
+        !["price-asc", "price-desc", "name-asc", "name-desc"].includes(savedState.sortBy) ||
+        !Array.isArray(savedState.garage) ||
+        !Array.isArray(savedState.currentShipment) ||
+        !Array.isArray(savedState.pendingShipments) ||
+        !Array.isArray(savedState.seenEndings) ||
+        !savedState.skills || typeof savedState.skills !== "object" ||
+        !Object.keys(skills).every(key => Number.isFinite(savedState.skills[key])) ||
+        !Array.isArray(savedState.history) ||
+        !savedState.history.every(entry => typeof entry === "string") ||
+        !savedState.seenEndings.every(ending => typeof ending === "string") ||
+        !savedState.garage.every(isSavedCar) ||
+        !savedState.currentShipment.every(isSavedCar) ||
+        !savedState.pendingShipments.every(shipment =>
+            shipment && Number.isFinite(shipment.arrivalDay) &&
+            Number.isFinite(shipment.arrivalHour) &&
+            Array.isArray(shipment.cars) && shipment.cars.every(isSavedCar))) {
+        setSaveStatus("The saved game is invalid or from an unsupported version.");
+        return;
+    }
+
+    balance = savedState.balance;
+    owedBalance = savedState.owedBalance;
+    debtDay = savedState.debtDay;
+    lastDebtReminderDay = savedState.lastDebtReminderDay;
+    day = savedState.day;
+    hour = savedState.hour;
+    baseShipmentSize = savedState.baseShipmentSize;
+    shipmentPrice = savedState.shipmentPrice;
+    currentShipment = savedState.currentShipment;
+    pendingShipments = savedState.pendingShipments;
+    nextCarId = savedState.nextCarId;
+    skillPoints = savedState.skillPoints;
+    sortBy = savedState.sortBy;
+    theftsToday = savedState.theftsToday;
+    securityLevel = savedState.securityLevel;
+    garageExpansion = savedState.garageExpansion;
+    skillPointPurchases = savedState.skillPointPurchases;
+    sleepAvailableAt = savedState.sleepAvailableAt;
+    gameEnded = savedState.gameEnded;
+    activeEndingKey = savedState.activeEndingKey;
+    document.getElementById("ending-title").textContent = savedState.endingTitle || "";
+    document.getElementById("ending-message").textContent = savedState.endingMessage || "";
+    pauseWhenHidden = savedState.pauseWhenHidden;
+    dailySales = savedState.dailySales;
+    totalSales = savedState.totalSales;
+    totalCaughtThefts = savedState.totalCaughtThefts;
+    pendingArrestEnding = savedState.pendingArrestEnding;
+    shipmentOrderedDay = savedState.shipmentOrderedDay;
+    garage = savedState.garage;
+    for (const key of Object.keys(skills)) {
+        skills[key] = savedState.skills[key];
+    }
+    seenEndings.clear();
+    for (const ending of savedState.seenEndings) {
+        seenEndings.add(ending);
+    }
+
+    const history = document.getElementById("history");
+    history.replaceChildren();
+    for (const entryText of savedState.history) {
+        const entry = document.createElement("p");
+        entry.className = "history-entry";
+        entry.textContent = entryText;
+        history.append(entry);
+    }
+    setSaveStatus("Saved game loaded.");
+}
+
+function isSavedCar(car) {
+    return car && typeof car === "object" &&
+        typeof car.make === "string" &&
+        typeof car.model === "string" &&
+        typeof car.rarity === "string" &&
+        Number.isFinite(car.durability) &&
+        Number.isFinite(car.recommendedPrice) &&
+        Number.isFinite(car.price) &&
+        Number.isFinite(car.id);
 }
 
 function endGame(key, title, message) {
     if (gameEnded) {
         return;
+    }
+
+    if(key == "taxes") {
+        document.getElementById("ending-continue").style = "display: none;";
     }
 
     gameEnded = true;
@@ -209,6 +389,7 @@ function endGame(key, title, message) {
     document.getElementById("ending-dialog").showModal();
     updateSleepButton();
     updateStealButton();
+    saveGame();
 }
 
 function continueAfterEnding() {
@@ -235,7 +416,36 @@ function continueAfterEnding() {
 }
 
 function restartGame() {
+    if (!window.confirm("Restart the game and delete your saved progress?")) {
+        return;
+    }
+
+    restartingGame = true;
+    try {
+        localStorage.removeItem(SAVE_KEY);
+    } catch (error) {
+        restartingGame = false;
+        setSaveStatus(`Could not clear the saved game: ${error.message}`);
+        return;
+    }
     window.location.reload();
+}
+
+function bankruptEnding() {
+    endGame("bankrupt", "Bankrupt!", "After rejecting the IRS, the police found you. Your dealership has been seized.");
+}
+
+function acceptLoan() {
+    document.getElementById("excl").style = "display: block; color: red;";
+    recordHistory(`Went bankrupt.`);
+    document.getElementById("bankrupt-title").textContent = "";
+    document.getElementById("bankrupt-message").textContent = ``;
+    document.getElementById("bankrupt-dialog").close();
+    balance = 100;
+    owedBalance = 200;
+    debtDay = day;
+    window.debtDay = debtDay;
+    updateAll();
 }
 
 function checkProgressEndings() {
@@ -295,9 +505,17 @@ function updateAll() {
     document.getElementById("quota-status").textContent = day <= 3
         ? "None (Days 1-3)"
         : `${dailySales}/${DAILY_SALES_QUOTA}`;
+    if (owedBalance > 0) {
+        document.getElementById("debt").style = "display: block; color: red;";
+        document.getElementById("debt").textContent = "Debt: " + formatMoney(owedBalance);
+    } else {
+        document.getElementById("debt").style.display = "none";
+        document.getElementById("excl").style.display = "none";
+    }
     updateSleepButton();
     renderBuyables();
-
+    updateDebtStatus();
+    checkBankruptcy();
     for (let i = pendingShipments.length - 1; i >= 0; i--) {
         let shipment = pendingShipments[i];
 
@@ -309,6 +527,49 @@ function updateAll() {
             }
         }
     }
+
+    updateShipTime();
+    saveGame();
+}
+
+function updateShipTime() {
+    const shipmentTime = document.getElementById("shipmentTime");
+    const nextShipment = pendingShipments[0];
+    shipmentTime.textContent = nextShipment
+        ? `Day: ${nextShipment.arrivalDay}; Time: ${formatClock(nextShipment.arrivalHour)}`
+        : currentShipment.length > 0
+            ? "Shipment Done."
+            : "No Shipment.";
+}
+
+function checkBankruptcy() {
+    if (balance < shipmentPrice && garage.length <= 0 
+            && pendingShipments.length <= 0 && currentShipment.length <= 0
+                && theftsToday >= (1 + skills.stealth) && owedBalance == 0) {
+        recordHistory(`Went bankrupt.`);
+        document.getElementById("bankrupt-title").textContent = "Bankrupt!";
+        document.getElementById("bankrupt-message").textContent = `You're out of money!`;
+        document.getElementById("bankrupt-dialog").showModal();
+    }
+
+}
+
+function updateDebtStatus() {
+    if (owedBalance <= 0 || debtDay < 0) {
+        return;
+    }
+
+    if (day >= debtDay + 7) {
+        endGame("taxes", "IRS!", "The IRS caught you. You had a week.");
+        return;
+    }
+
+    if (lastDebtReminderDay === day || document.querySelector("dialog[open]")) {
+        return;
+    }
+
+    lastDebtReminderDay = day;
+    document.getElementById("debt-reminder-dialog").showModal();
 }
 
 function populateShipment() {
@@ -365,6 +626,7 @@ function unpackCar() {
 
     const randomIndex = Math.floor(Math.random() * currentShipment.length);
     const [car] = currentShipment.splice(randomIndex, 1);
+    updateShipTime();
     updateCarDurability(car, Math.max(30, car.durability - skills.strength * 2));
     garage.push(car);
     recordHistory(`${car.make} ${car.model} was added to the garage.`);
@@ -607,6 +869,10 @@ function skipTime() {
     advanceTime();
 }
 
+function skipDay() {
+    day++;
+}
+
 function renderSkills() {
     const skillList = document.getElementById("skill-list");
     document.getElementById("skillPoints").textContent = skillPoints;
@@ -679,15 +945,15 @@ function downgradeSkill(key, name) {
 }
 
 function getSkillPointCost() {
-    return Math.round(50 * Math.pow(1.8017, skillPointPurchases));
+    return Math.round(50 * Math.pow(1.32, skillPointPurchases));
 }
 
 function getGarageExpansionCost() {
-    return Math.round(100 * Math.pow(2.5, garageExpansion / 2));
+    return Math.round(100 * Math.pow(4.3, garageExpansion / 2));
 }
 
 function getSecurityUpgradeCost() {
-    return Math.round(50 * Math.pow(2.5, securityLevel));
+    return Math.round(50 * Math.pow(2.63, securityLevel));
 }
 
 function createBuyable(name, description, cost, action) {
@@ -776,7 +1042,7 @@ function buySecurity() {
 
 function getRiskDetails(car) {
     const priceRisk = 12 + Math.log2(Math.max(1, car.recommendedPrice / 100)) * 16;
-    const chance = Math.max(1, Math.min(95, Math.round(priceRisk - skills.stealth * 8)));
+    const chance = Math.floor(Math.max(8, priceRisk * Math.pow(3/4, skills.stealth)));//Math.max(1, Math.min(95, Math.round(priceRisk - skills.stealth * 8)));
     const bandIndex = Math.min(9, Math.floor(chance / 10));
 
     return {
@@ -784,6 +1050,20 @@ function getRiskDetails(car) {
         level: RISK_LEVELS[bandIndex],
         range: `${bandIndex * 10}-${(bandIndex + 1) * 10}%`
     };
+}
+
+function payDebt() {
+    if (owedBalance > 0 && balance >= owedBalance) {
+        balance -= owedBalance;
+        owedBalance = 0;
+        debtDay = -1;
+        window.debtDay = debtDay;
+    } else if (owedBalance > 0) {
+        alert("Not enough money!");
+        owedBalance *= 1.5;
+    }
+
+    updateAll();
 }
 
 function getRandomTheftCandidates(count) {
@@ -960,6 +1240,11 @@ function updateVisibilityPause() {
     }
 }
 
+function updateTax() {
+    owedBalance *= 1.1;
+    saveGame();
+}
+
 document.getElementById("sleepButton").addEventListener("click", sleepUntilMorning);
 document.getElementById("stealButton").addEventListener("click", openTheftPicker);
 document.getElementById("close-theft-dialog").addEventListener("click", () => {
@@ -974,13 +1259,28 @@ document.getElementById("fine-dismiss").addEventListener("click", () => {
 });
 document.getElementById("ending-continue").addEventListener("click", continueAfterEnding);
 document.getElementById("ending-restart").addEventListener("click", restartGame);
+document.getElementById("bankrupt-loan").addEventListener("click", acceptLoan);
+document.getElementById("bankrupt-restart").addEventListener("click", bankruptEnding);
+document.getElementById("debt-reminder-dismiss").addEventListener("click", () => {
+    document.getElementById("debt-reminder-dialog").close();
+    updateDebtStatus();
+});
 document.getElementById("ending-dialog").addEventListener("cancel", event => event.preventDefault());
 const pauseSetting = document.getElementById("pause-when-hidden");
-pauseWhenHidden = pauseSetting.checked;
+loadGame();
+pauseSetting.checked = pauseWhenHidden;
 pauseSetting.addEventListener("change", () => {
     pauseWhenHidden = pauseSetting.checked;
     updateVisibilityPause();
+    saveGame();
 });
+document.getElementById("settings-button").addEventListener("click", () => {
+    document.getElementById("settings-dialog").showModal();
+});
+document.getElementById("settings-close").addEventListener("click", () => {
+    document.getElementById("settings-dialog").close();
+});
+document.getElementById("restart-button").addEventListener("click", restartGame);
 document.addEventListener("visibilitychange", updateVisibilityPause);
 document.getElementById("repair-confirm").addEventListener("click", confirmRepair);
 document.getElementById("repair-cancel").addEventListener("click", closeRepairDialog);
@@ -996,9 +1296,23 @@ renderGarage();
 updateAll();
 updateStealButton();
 updateSleepButton();
-startGameTimers();
+if (gameEnded && activeEndingKey) {
+    if (activeEndingKey === "taxes") {
+        document.getElementById("ending-continue").hidden = true;
+    }
+    if (!document.getElementById("ending-dialog").open) {
+        document.getElementById("ending-dialog").showModal();
+    }
+} else {
+    startGameTimers();
+}
 sleepCooldownTimer = setInterval(updateSleepButton, 1000);
+interestTimer = setInterval(updateTax, 24 * GAME_HOUR_INTERVAL_MS);
+window.addEventListener("beforeunload", saveGame);
 
 window.populateShipment = populateShipment;
 window.unpackCar = unpackCar;
 window.skipTime = skipTime;
+window.payDebt = payDebt;
+window.skipDay = skipDay;
+window.debtDay = debtDay;

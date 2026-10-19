@@ -18,17 +18,18 @@
 body {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) minmax(0, 2.8fr) minmax(240px, 1.1fr);
-    grid-template-rows: auto minmax(180px, 0.9fr) minmax(180px, 1.1fr);
+    grid-template-rows: auto minmax(0, 0.9fr) minmax(0, 1.1fr);
     grid-template-areas:
         "header header header"
         "skills garage actions"
         "upgrades garage actions";
     gap: var(--gap);
     min-width: 320px;
-    min-height: 100vh;
-    min-height: 100svh;
+    height: 100vh;
+    height: 100svh;
     margin: 0;
     padding: 0;
+    overflow: hidden;
     background-color: #e0fce0;
 }
 
@@ -97,6 +98,11 @@ p {
     white-space: nowrap;
 }
 
+.settings-button {
+    color: #2D3A2E;
+    font-size: 22px;
+}
+
 .pause-setting input {
     width: 16px;
     height: 16px;
@@ -106,6 +112,7 @@ p {
 
 .skills,
 .upgrades {
+    min-height: 0;
     padding: 14px;
 }
 
@@ -113,8 +120,8 @@ p {
     grid-area: skills;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
+    gap:10px;
+    overflow:auto;
 }
 
 .upgrades {
@@ -122,12 +129,12 @@ p {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 #skillLabel,
 #upgradeLabel {
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .skill-list {
@@ -273,6 +280,13 @@ p {
     flex-direction: column;
     gap: 6px;
     overflow: hidden;
+}
+
+.shipmentTimer {
+    position: relative;
+    width: 100%;
+    color: black;
+    text-align: center;
 }
 
 .history-title {
@@ -440,6 +454,26 @@ p {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+}
+
+.settings-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.settings-actions button {
+    min-height: 38px;
+    padding: 7px 14px;
+    border: 1px solid #70947a;
+    border-radius: 3px;
+    background: #D8F3DC;
+    color: #2D3A2E;
+    cursor: pointer;
+}
+
+.save-status {
+    font-size: 13px;
 }
 
 .repair-dialog-actions button:disabled {
@@ -666,15 +700,13 @@ p {
 
 @media (max-width: 800px) {
     body {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-rows: auto auto minmax(280px, 1fr) auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1.15fr);
         grid-template-areas:
             "header header"
             "skills upgrades"
-            "garage garage"
-            "actions actions";
-        min-height: 100vh;
-        min-height: 100svh;
+            "actions actions"
+            "garage garage";
     }
 
     .topBanner {
@@ -682,8 +714,10 @@ p {
         justify-content: flex-start;
     }
 
-    .garage {
-        min-height: 280px;
+    .skills,
+    .upgrades {
+        padding: 8px;
+        gap: 6px;
     }
 
     .garage-toolbar {
@@ -692,53 +726,169 @@ p {
 
     .actions {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr)) 80px;
         align-items: center;
+        gap: 8px;
+        padding: 8px;
     }
 
     #cupboard {
         flex: initial;
-        grid-row: 1 / 3;
-        grid-column: 3;
-        width: min(150px, 100%);
+        grid-row: 1;
+        grid-column: 4;
+        width: 100%;
         aspect-ratio: 1;
         margin: auto;
     }
 
+    .shipmentTimer {
+        grid-column: 1 / -1;
+    }
+
     .historyBox {
         grid-column: 1 / -1;
+        min-height: 76px;
+        flex: 1 1 76px;
         margin-top: 0;
+    }
+
+    .actions button {
+        width: 100%;
+        min-width: 0;
+        min-height: 38px;
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    .garage {
+        min-height: 0;
     }
 }
 
 @media (max-width: 560px) {
-    body {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto auto auto minmax(280px, 1fr) auto;
-        grid-template-areas:
-            "header"
-            "skills"
-            "upgrades"
-            "garage"
-            "actions";
+    .topBanner {
+        gap: 6px 10px;
+        padding: 6px 8px;
     }
 
-    .topBanner {
-        gap: 8px 14px;
-        padding: 10px;
+    #gameName {
+        font-size: 24px;
+    }
+
+    #day,
+    #time,
+    #quota,
+    .zDolDisplay {
+        font-size: 14px;
+    }
+
+    .pause-setting {
+        font-size: 11px;
     }
 
     .garage-toolbar {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding-bottom: 6px;
     }
 
     .garage-toolbar label:first-child {
         grid-column: 1 / -1;
     }
 
-    #gameName {
-        width: 100%;
+    .skills,
+    .upgrades {
+        padding: 6px;
+        gap: 5px;
+    }
+
+    #skillLabel,
+    #upgradeLabel {
+        font-size: 14px;
+    }
+
+    .skill-list {
+        gap: 3px;
+    }
+
+    .skill-row {
+        min-height: 26px;
+        gap: 3px;
+        font-size: 11px;
+    }
+
+    .skill-controls {
+        gap: 2px;
+    }
+
+    .skill-upgrade {
+        width: 23px;
+        height: 25px;
+        font-size: 16px;
+    }
+
+    .buyables-list {
+        gap: 4px;
+    }
+
+    .buyable-row {
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .buyable-details {
+        gap: 1px;
+    }
+
+    .buyable-details strong {
+        font-size: 11px;
+    }
+
+    .buyable-details span {
+        font-size: 10px;
+        line-height: 1.1;
+    }
+
+    .buyable-row button {
+        min-height: 28px;
+        padding: 3px 5px;
+        font-size: 11px;
+    }
+
+    .security-status {
+        padding-top: 4px;
+        font-size: 10px;
+        line-height: 1.1;
+    }
+
+    .actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) 54px;
+        gap: 5px;
+        padding: 6px;
+    }
+
+    .actions button {
+        min-height: 34px;
+        padding: 4px 2px;
+        font-size: 12px;
+    }
+
+    #cupboard {
+        width: 50px;
+    }
+
+    .historyBox {
+        min-height: 56px;
+        flex-basis: 56px;
+        padding: 5px;
+    }
+
+    .history-title {
+        font-size: 12px;
+    }
+
+    #history {
+        font-size: 10px;
     }
 
     .car-display {

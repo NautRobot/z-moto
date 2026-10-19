@@ -50,6 +50,8 @@ FEATURES:
 Quota - for fired ending - 1 car a day 
 10 Minute days
 Pause when leaving tab (disable in settings)
+Autosaves progress in browser storage
+Settings menu with pause and restart controls
 Sleep button (end day)
 Chance to get robbed each night based on security and size of garage (Randomly selected car)
 Damage when stealing cars
@@ -80,14 +82,12 @@ ADDITIONS
 =1 steal a day base 
 =price doubles with rarity
 =change skill point cost scaling
+=LOAN if out of money
+=fix scroll so just garage scrolls
+=show shipment expected time (move cupboard up a little) - show "Shipment Done!" when its here; show day number and time when not done; in a black alarm-clock like box
+=save system
 
-LOAN if out of money
-tutorial - black circle
-fix scroll so just garage scrolls
-show shipment expected time (move cupboard up a little) - show "Shipment Done!" when its here; show day number and time when not done; in a black alarm-clock like box
-fix sizing so everythings is visible without scrolling down (including skills)
-slow progression (lengthen endings)
+fix images (add new also)
 trophy case to show endings
-autosave feature (saves)
-restart button
-add new images from will
+slow progression (lengthen endings)
+tutorial - black circle

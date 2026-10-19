@@ -17,10 +17,14 @@
         <p id="time">Time: <span id="hours">08</span>:00</p>
         <div class="zDolDisplay">
             <img src="assets/z-dol.png">
+            <p id="excl" onclick="payDebt()" style="display: none;">!</p>
+            <p id="debt" style="display: none;"></p>
             <span id="z-dols">100</span>
         </div>
         <p id="quota">Quota: <span id="quota-status">None (Days 1-3)</span></p>
-        <label class="pause-setting"><input id="pause-when-hidden" type="checkbox" checked>Pause when away</label>
+        <button id="settings-button" class="icon-button settings-button" type="button" aria-label="Settings" aria-haspopup="dialog" title="Settings">
+            <span aria-hidden="true">⚙️</span>
+        </button>
     </div>
 
     <!-- Skill Upgrades -->
@@ -42,6 +46,9 @@
         <button id="stealButton">Steal</button>
         <button id="sleepButton">Sleep</button>
         <img id="cupboard" src="assets/cupboard.png" alt="Unpack a delivered car" onclick="unpackCar()">
+        <div class="shipmentTimer">
+            <p id="shipmentTime">No Shipment.</p>
+        </div>
         <div class="historyBox">
             <p class="history-title">History</p>
             <div id="history" aria-live="polite">
@@ -118,6 +125,33 @@
             <div class="repair-dialog-actions">
                 <button id="repair-cancel" type="button">Cancel</button>
                 <button id="repair-confirm" type="button">Repair</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog" id="bankrupt-dialog" aria-labelledby="bankrupt-title">
+        <div class="notice-dialog-content">
+            <h2 id="bankrupt-title"></h2>
+            <p id="bankrupt-message"></p>
+            <div class="bankrupt-actions">
+                <button id="bankrupt-loan" type="button">Accept Loan</button>
+                <button id="bankrupt-restart" type="button">Decline Loan</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog" id="debt-reminder-dialog" aria-labelledby="debt-reminder-title">
+        <div class="notice-dialog-content">
+            <h2 id="debt-reminder-title">Pay your debt!</h2>
+            <button id="debt-reminder-dismiss" type="button">OK</button>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog" id="settings-dialog" aria-labelledby="settings-title">
+        <div class="notice-dialog-content">
+            <h2 id="settings-title">Settings</h2>
+            <label class="pause-setting"><input id="pause-when-hidden" type="checkbox" checked>Pause when away</label>
+            <p id="save-status" class="save-status" role="status" aria-live="polite">Autosave is on.</p>
+            <div class="settings-actions">
+                <button id="settings-close" type="button">Close</button>
+                <button id="restart-button" type="button">Restart game</button>
             </div>
         </div>
     </dialog>
