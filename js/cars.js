@@ -95,12 +95,11 @@ export const cars = [
     make: "Chevrolet",
     defaultRarity: "Common",
     models: [
-      "Blazer", "Blazer EV", "Bolt EV", "Bolt EUV", "Colorado", "Equinox", "Equinox EV",
+      "Blazer", "Blazer EV", "Bolt EUV", "Colorado", "Equinox", "Equinox EV",
       "Express 2500", "Express 3500", "Malibu", "Silverado 1500", "Silverado 2500 HD",
       "Silverado 3500 HD", "Silverado EV", "Suburban", "Tahoe", "Trailblazer", "Trax",
       { name: "Corvette Stingray", rarity: "Rare" },
       { name: "Corvette E-Ray", rarity: "Epic" },
-      { name: "Corvette Z06", rarity: "Epic" },
       { name: "Corvette ZR1", rarity: "Legendary" }
     ]
   },
@@ -136,7 +135,7 @@ export const cars = [
     defaultRarity: "Common",
     models: [
       "Bronco Sport", "Edge", "Escape", "Explorer", "F-150", "F-150 Lightning",
-      "F-250 Super Duty", "F-350 Super Duty", "F-450 Super Duty", "Maverick", "Mustang",
+      "F-350 Super Duty", "Maverick", "Mustang",
       "Mustang Mach-E", "Ranger", "Transit Passengercam", "Transit Cargo", "E-Transit",
       { name: "Bronco", rarity: "Uncommon" },
       { name: "Expedition", rarity: "Uncommon" },
@@ -169,7 +168,7 @@ export const cars = [
     defaultRarity: "Common",
     models: [
       "Accord", "Accord Hybrid", "Civic Sedan", "Civic Hatchback", "Civic Hybrid",
-      "CR-V", "CR-V Hybrid", "HR-V", "Odyssey", "Passport", "Pilot", "Prologue", "Ridgeline",
+      "CR-V Hybrid", "HR-V", "Odyssey", "Passport", "Pilot", "Prologue", "Ridgeline",
       { name: "Civic Type R", rarity: "Uncommon" }
     ]
   },
@@ -178,7 +177,7 @@ export const cars = [
     defaultRarity: "Common",
     models: [
       "Elantra", "Elantra Hybrid", "Ioniq 5", "Ioniq 6", "Ioniq 9", "Kona", "Kona Electric",
-      "Palisade", "Santa Cruz", "Santa Fe", "Santa Fe Hybrid", "Sonata", "Sonata Hybrid",
+      "Palisade", "Santa Fe", "Santa Fe Hybrid", "Sonata", "Sonata Hybrid",
       "Tucson", "Tucson Hybrid", "Tucson Plug-in Hybrid", "Venue",
       { name: "Elantra N", rarity: "Uncommon" },
       { name: "Ioniq 5 N", rarity: "Rare" }
@@ -221,7 +220,7 @@ export const cars = [
   {
     make: "Lamborghini",
     defaultRarity: "Legendary",
-    models: ["Huracán", "Revuelto", "Temerario", "Urus"]
+    models: ["Revuelto", "Temerario"]
   },
   {
     make: "Land Rover",
@@ -255,7 +254,7 @@ export const cars = [
     make: "Lincoln",
     defaultRarity: "Uncommon",
     models: [
-      "Corsair", "Nautilus", "Aviator",
+      "Corsair",
       { name: "Navigator", rarity: "Rare" },
       { name: "Navigator L", rarity: "Rare" }
     ]
@@ -274,7 +273,7 @@ export const cars = [
     make: "Maserati",
     defaultRarity: "Epic",
     models: [
-      "Ghibli", "Grecale", "Grecale Folgore", "GranTurismo", "GranTurismo Folgore", "GranCabrio", "Levante",
+      "Ghibli", "Grecale", "Grecale Folgore", "GranTurismo Folgore", "GranCabrio", "Levante",
       { name: "MC20", rarity: "Legendary" },
       { name: "MC20 Cielo", rarity: "Legendary" }
     ]
@@ -302,11 +301,8 @@ export const cars = [
       { name: "EQS Sedan", rarity: "Epic" },
       { name: "EQS SUV", rarity: "Epic" },
       { name: "G-Class", rarity: "Epic" },
-      { name: "G 580 with EQ Technology", rarity: "Epic" },
       { name: "GLS", rarity: "Epic" },
       { name: "GT Coupe", rarity: "Epic" },
-      { name: "GT 4-Door Coupe", rarity: "Epic" },
-      { name: "SL Roadster", rarity: "Epic" },
       { name: "Maybach S-Class", rarity: "Legendary" },
       { name: "Maybach EQS SUV", rarity: "Legendary" },
       { name: "Maybach GLS", rarity: "Legendary" }
@@ -320,7 +316,7 @@ export const cars = [
   {
     make: "Mitsubishi",
     defaultRarity: "Common",
-    models: ["Eclipse Cross", "Mirage", "Mirage G4", "Outlander", "Outlander PHEV", "Outlander Sport"]
+    models: ["Eclipse Cross", "Mirage", "Mirage G4", "Outlander", "Outlander PHEV"]
   },
   {
     make: "Nissan",
@@ -341,8 +337,7 @@ export const cars = [
     make: "Porsche",
     defaultRarity: "Epic",
     models: [
-      "718 Cayman", "718 Boxster", "Macan", "Macan EV", "Cayenne", "Cayenne Coupe", "Panamera", "Taycan", "Taycan Cross Turismo", "Taycan Sport Turismo",
-      { name: "911 Coupe", rarity: "Epic" },
+      "718 Cayman", "718 Boxster", "Macan", "Macan EV", "Cayenne Coupe", "Panamera", "Taycan", "Taycan Cross Turismo", "Taycan Sport Turismo",
       { name: "911 Cabriolet", rarity: "Epic" },
       { name: "911 Targa", rarity: "Epic" },
       { name: "718 Spyder RS", rarity: "Legendary" }
@@ -383,11 +378,9 @@ export const cars = [
     defaultRarity: "Common",
     models: [
       "4Runner", "bZ4X", "Camry", "Corolla", "Corolla Hatchback", "Corolla Hybrid", "Corolla Cross",
-      "Corolla Cross Hybrid", "Crown", "Crown Signia", "GR86", "Grand Highlander", "Grand Highlander Hybrid",
+      "Corolla Cross Hybrid", "Crown", "GR86", "Grand Highlander", "Grand Highlander Hybrid",
       "Highlander", "Highlander Hybrid", "Land Cruiser", "Prius", "Prius Prime", "RAV4", "RAV4 Hybrid",
       "RAV4 Plug-in Hybrid", "Sequoia", "Sienna", "Tacoma", "Tundra", "Venza",
-      { name: "GR Corolla", rarity: "Uncommon" },
-      { name: "GR Supra", rarity: "Uncommon" }
     ]
   },
   {
@@ -398,6 +391,6 @@ export const cars = [
   {
     make: "Volvo",
     defaultRarity: "Uncommon",
-    models: ["EX30", "EX90", "EC40", "EX40", "S60", "S90", "V60 Cross Country", "V90 Cross Country", "XC40", "XC60", "XC60 Plug-in Hybrid", "XC90", "XC90 Plug-in Hybrid"]
+    models: ["EX30", "S60", "S90", "V60 Cross Country", "V90 Cross Country", "XC40", "XC60", "XC60 Plug-in Hybrid", "XC90"]
   }
 ];

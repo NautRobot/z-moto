@@ -43,6 +43,8 @@ You attempt to steal too many cars and get arrested.
 All your cars get stolen - if security is too low based on garage size
 You get enough extra skills to get a new job and quit!
 You get fired for not selling cars.
+Get a loan and don't pay it back.
+Reject the loan.
 */
 
 /*
@@ -86,8 +88,8 @@ ADDITIONS
 =fix scroll so just garage scrolls
 =show shipment expected time (move cupboard up a little) - show "Shipment Done!" when its here; show day number and time when not done; in a black alarm-clock like box
 =save system
+=fix images (add new also)
 
-fix images (add new also)
 trophy case to show endings
 slow progression (lengthen endings)
 tutorial - black circle

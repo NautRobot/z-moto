@@ -46,8 +46,8 @@ const skills = {
 };
 
 const SKILL_DETAILS = [
-    ["charisma", "Charisma", "Raises recommended prices and buyer interest. Side effect: none."],
-    ["expertise", "Expertise", "Makes game hours pass faster. Side effect: none."],
+    ["charisma", "Charisma", "Raises recommended prices and buyer willingness to pay. Side effect: none."],
+    ["expertise", "Expertise", "Makes game hours pass faster and increases buyer check frequency. Side effect: none."],
     ["networking", "Networking", "Adds one car to each shipment; media critiques reduce sale payouts by 2% per level."],
     ["stealth", "Stealth", "Reduces theft risk and adds one daily attempt per level. Side effect: none."],
     ["handiness", "Handiness", "Repairs more durability for less and reduces theft damage."],
@@ -66,6 +66,8 @@ const GAME_HOUR_INTERVAL_MS = 10_000;
 const EXPERTISE_INTERVAL_REDUCTION_MS = 2_000;
 const MIN_GAME_HOUR_INTERVAL_MS = 5_000;
 const SALE_CHECK_INTERVAL_MS = 3_000;
+const EXPERTISE_SALE_INTERVAL_REDUCTION_MS = 500;
+const MIN_SALE_CHECK_INTERVAL_MS = 1_000;
 const SALE_TICK_CHANCE_FACTOR = 0.12;
 const SAVE_KEY = "z-moto-save";
 const SAVE_VERSION = 1;
@@ -164,7 +166,8 @@ function updateCarDurability(car, durability) {
 
 function getBuyerChance(car) {
     const priceRatio = car.recommendedPrice / Math.max(1, car.price);
-    const priceChance = 0.32 + skills.charisma * 0.04 + (priceRatio - 1) * 0.3;
+    const buyerPriceRatio = priceRatio * (1 + skills.charisma * 0.1);
+    const priceChance = 0.32 + skills.charisma * 0.04 + (buyerPriceRatio - 1) * 0.3;
     const conditionChance = getConditionMultiplier(car.durability);
     const rarityChance = RARITY_BUYER_FACTORS[car.rarity] || 0.75;
     const chancePerCheck = priceChance * conditionChance * rarityChance * SALE_TICK_CHANCE_FACTOR;
@@ -925,6 +928,7 @@ function upgradeSkill(key, name) {
     renderGarage();
     updateStealButton();
     resetClockTimer();
+    resetSaleTimer();
     recordHistory(`${name} increased to level ${skills[key]}.`);
     checkProgressEndings();
 }
@@ -941,6 +945,7 @@ function downgradeSkill(key, name) {
     renderGarage();
     updateStealButton();
     resetClockTimer();
+    resetSaleTimer();
     recordHistory(`${name} decreased to level ${skills[key]}; 1 skill point was returned.`);
 }
 
@@ -1206,6 +1211,20 @@ function resetClockTimer() {
     clockTimer = setInterval(advanceTime, interval);
 }
 
+function resetSaleTimer() {
+    clearInterval(saleTimer);
+    if (gameEnded || pagePaused || (pauseWhenHidden && document.hidden)) {
+        saleTimer = null;
+        return;
+    }
+
+    const interval = Math.max(
+        MIN_SALE_CHECK_INTERVAL_MS,
+        SALE_CHECK_INTERVAL_MS - skills.expertise * EXPERTISE_SALE_INTERVAL_REDUCTION_MS
+    );
+    saleTimer = setInterval(processCarSales, interval);
+}
+
 function stopGameTimers() {
     clearInterval(clockTimer);
     clearInterval(saleTimer);
@@ -1226,8 +1245,7 @@ function startGameTimers() {
 
     pagePaused = false;
     resetClockTimer();
-    clearInterval(saleTimer);
-    saleTimer = setInterval(processCarSales, SALE_CHECK_INTERVAL_MS);
+    resetSaleTimer();
 }
 
 function updateVisibilityPause() {
