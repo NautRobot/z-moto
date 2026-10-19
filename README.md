@@ -73,3 +73,21 @@ H-   (60-70%)
 H    (70-80%)
 H+   (80-90%)
 I    (90-100%)
+
+
+ADDITIONS
+-----------
+=1 steal a day base 
+=price doubles with rarity
+=change skill point cost scaling
+
+LOAN if out of money
+tutorial - black circle
+fix scroll so just garage scrolls
+show shipment expected time
+fix sizing so everythings is visible without scrolling down (including skills)
+slow progression (lengthen endings)
+trophy case to show endings
+autosave feature (saves)
+restart button
+add new images from will

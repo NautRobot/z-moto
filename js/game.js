@@ -1,10 +1,10 @@
 import { cars, RARITY_WEIGHTS } from './cars.js';
 
-let balance = 10;
+let balance = 100;
 let day = 1;
 let hour = 8;
 let baseShipmentSize = 2;
-let shipmentPrice = 5; // UZD - United Zeke Dollar
+let shipmentPrice = 100; // UZD - United Zeke Dollar
 let currentShipment = [];
 let pendingShipments = [];
 let nextCarId = 1;
@@ -53,7 +53,7 @@ const BASE_GARAGE_CAPACITY = 3;
 const GOOD_ENDING_SALES = 16;
 const GOOD_ENDING_FUNDS = 1000;
 const QUIT_ENDING_SKILL_LEVELS = 10;
-const ARREST_ENDING_CAUGHT = 5;
+const ARREST_ENDING_CAUGHT = 3;
 const DAILY_SALES_QUOTA = 1;
 const SLEEP_COOLDOWN_MS = 30_000;
 const GAME_HOUR_INTERVAL_MS = 10_000;
@@ -64,11 +64,11 @@ const SALE_TICK_CHANCE_FACTOR = 0.12;
 
 const RECOMMENDED_PRICES = {
     Common: 100,
-    Uncommon: 250,
-    Rare: 500,
-    Epic: 1000,
-    Legendary: 2500,
-    Mythic: 5000
+    Uncommon: 200,
+    Rare: 400,
+    Epic: 800,
+    Legendary: 1600,
+    Mythic: 3200
 };
 
 const RARITY_BUYER_FACTORS = {
@@ -679,15 +679,15 @@ function downgradeSkill(key, name) {
 }
 
 function getSkillPointCost() {
-    return Math.round(25 * Math.pow(2.5, skillPointPurchases));
+    return Math.round(50 * Math.pow(1.8017, skillPointPurchases));
 }
 
 function getGarageExpansionCost() {
-    return Math.round(50 * Math.pow(2.5, garageExpansion / 2));
+    return Math.round(100 * Math.pow(2.5, garageExpansion / 2));
 }
 
 function getSecurityUpgradeCost() {
-    return Math.round(25 * Math.pow(2.5, securityLevel));
+    return Math.round(50 * Math.pow(2.5, securityLevel));
 }
 
 function createBuyable(name, description, cost, action) {
@@ -811,7 +811,7 @@ function getRandomTheftCandidates(count) {
 }
 
 function getDailyTheftLimit() {
-    return 2 + skills.stealth;
+    return 1 + skills.stealth;
 }
 
 function updateStealButton() {
