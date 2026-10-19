@@ -84,7 +84,7 @@ ADDITIONS
 LOAN if out of money
 tutorial - black circle
 fix scroll so just garage scrolls
-show shipment expected time
+show shipment expected time (move cupboard up a little) - show "Shipment Done!" when its here; show day number and time when not done; in a black alarm-clock like box
 fix sizing so everythings is visible without scrolling down (including skills)
 slow progression (lengthen endings)
 trophy case to show endings
