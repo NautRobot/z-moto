@@ -632,14 +632,16 @@ function continueAfterEnding() {
 }
 
 function restartGame() {
-    if (!window.confirm("Restart the current run? Trophies and achievements will be kept, but the tutorial will play again.") ||
-        !window.confirm("Are you sure? This run's save will be erased and the tutorial will replay.")) {
+    if (!window.confirm("Fully restart the game? Your save, endings, achievements, and tutorial progress will be erased.") ||
+        !window.confirm("Are you sure? All game progress and unlocks will be erased.")) {
         return;
     }
 
     restartingGame = true;
     try {
         localStorage.removeItem(SAVE_KEY);
+        localStorage.removeItem(TROPHY_KEY);
+        localStorage.removeItem(ACHIEVEMENT_KEY);
         localStorage.removeItem(TUTORIAL_KEY);
     } catch (error) {
         restartingGame = false;
