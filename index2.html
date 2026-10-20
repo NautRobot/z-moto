@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zeke Math Games</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      text-align: center;
+      padding: 50px 20px;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 2;
+    }
+    h1 {
+      color: #1e3c72;
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+    }
+    .button-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    .redirect-btn {
+      display: block;
+      padding: 15px 25px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .redirect-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+    }
+
+    /* COUNTDOWN STYLE (NO COLOR) */
+    #countdown-container {
+      margin-top: 30px;
+      font-size: 1.1rem;
+      font-weight: normal;
+      color: inherit; /* Keeps default text color */
+    }
+  </style>
+
+  <!-- External library to trigger the confetti effect easily -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="button-list" id="btn-list">
+      <a href="https://nautrobot.github.io/z-clicker" class="redirect-btn">
+        Legacy Z-Clicker; Click away and upgrade your Zekes to form an army!
+      </a>
+      <a href="https://nautrobot.github.io/z-clicker-remastered" class="redirect-btn">
+        Z-Clicker REMASTERED!; Click away to make Zeke gassy until he explodes!
+      </a>
+      <a href="https://nautrobot.github.io/z-tetris" class="redirect-btn">
+        Z-Tetris!; Stack and Score in this Zeke themed Tetris!
+      </a>
+      <a href="https://nautrobot.github.io/z-cases" class="redirect-btn">
+        Z-Cases!; Spin and Win in this killer CS:GO style crates! Trade away!
+      </a>
+      <a>
+        MORE COMING SOON! EMAIL FEEDBACK TO s1002796@student.knoxschools.org
+      </a>
+      <div>
+        ZMathGames has had an economy revamp! Visit Z-Cases to spin and win! 
+        1 Minute (Actively playing) a game gives 1 Zeke point! 20 to spin a case.
+      </div>
+    </div>
+
+    <!-- NEW COUNTDOWN CONTAINER -->
+    <div id="countdown-container">
+      Next game unlocks in: <span id="countdown">Loading...</span>
+    </div>
+  </div>
+
+  <script>
+    // Target Date: 10:30 AM EST 10/20/2026
+    const targetDate = new Date("Oct 19, 2026 22:53:00 EDT").getTime();
+    let hasTriggered = false;
+
+    // Update the count down every 1 second
+    const x = setInterval(function() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      // Time calculations for days, hours, minutes and seconds
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Display the result
+      document.getElementById("countdown").innerHTML = days + "d " + hours + "h " 
+      + minutes + "m " + seconds + "s ";
+
+      // If the count down is over, clear interval and run actions
+      if (distance < 0) {
+        clearInterval(x);
+        document.getElementById("countdown-container").style.display = "none";
+        
+        if (!hasTriggered) {
+          hasTriggered = true;
+          
+          // 1. Create and add the Z-Moto button
+          const btnList = document.getElementById("btn-list");
+          const newBtn = document.createElement("a");
+          newBtn.href = "https://nautrobot.github.io/zmoto-official";
+          newBtn.className = "redirect-btn";
+          newBtn.innerText = "Z-Moto";
+          
+          // Insert it right before the "MORE COMING SOON" line
+          btnList.insertBefore(newBtn, btnList.children[4]);
+
+          // 2. Trigger the Confetti explosion (lasts 5 seconds)
+          const duration = 5 * 1000;
+          const end = Date.now() + duration;
+
+          (function frame() {
+            confetti({
+              particleCount: 7,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 }
+            });
+            confetti({
+              particleCount: 7,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 }
+            });
+
+            if (Date.now() < end) {
+              requestAnimationFrame(frame);
+            }
+          }());
+        }
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

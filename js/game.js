@@ -72,7 +72,7 @@ const MIN_GAME_HOUR_INTERVAL_MS = 5_000;
 const SALE_CHECK_INTERVAL_MS = 3_000;
 const EXPERTISE_SALE_INTERVAL_REDUCTION_MS = 500;
 const MIN_SALE_CHECK_INTERVAL_MS = 1_000;
-const SALE_TICK_CHANCE_FACTOR = 0.12;
+const SALE_TICK_CHANCE_FACTOR = 0.13;
 const CAR_SALE_COOLDOWN_MS = 10_000;
 const SAVE_KEY = "z-moto-save";
 const TROPHY_KEY = "z-moto-trophies";
@@ -582,7 +582,7 @@ function endGame(key, title, message) {
         return;
     }
 
-    if (key === "taxes" || key === "quit") {
+    if (key === "taxes") {
         document.getElementById("ending-continue").hidden = true;
     }
 
@@ -651,7 +651,7 @@ function restartGame() {
 
 function quitRun() {
     document.getElementById("settings-dialog").close();
-    endGame("quit", "Run ended", "You chose to end this run. Your progress and unlocked trophies remain saved.");
+    endGame("quit-run", "Run ended", "You chose to end this run. Your progress and unlocked trophies remain saved.");
 }
 
 function bankruptEnding() {
@@ -685,8 +685,8 @@ function clearStealingStrike() {
 }
 
 function checkProgressEndings() {
-    const skillLevels = Object.values(skills).reduce((total, level) => total + level, 0);
-    if (!seenEndings.has("quit") && skillLevels >= QUIT_ENDING_SKILL_LEVELS) {
+    const hasMasteredSkill = Object.values(skills).some(level => level >= QUIT_ENDING_SKILL_LEVELS);
+    if (!seenEndings.has("quit") && hasMasteredSkill) {
         endGame("quit", "A fresh start", "Your skills opened the door to a better job. You leave the dealership behind.");
         return true;
     }
@@ -1717,7 +1717,7 @@ updateAll();
 updateStealButton();
 updateSleepButton();
 if (gameEnded && activeEndingKey) {
-    if (activeEndingKey === "taxes" || activeEndingKey === "quit") {
+    if (activeEndingKey === "taxes") {
         document.getElementById("ending-continue").hidden = true;
     }
     if (!document.getElementById("ending-dialog").open) {
