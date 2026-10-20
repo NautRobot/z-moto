@@ -54,12 +54,14 @@ Quota - for fired ending - 1 car a day
 10 Minute days
 Pause when leaving tab (disable in settings)
 Autosaves progress in browser storage
-Settings menu with pause and restart controls
+Settings menu with pause, Quit Run, and a double-confirmation current-run restart
+Quit Run ends the current run without deleting its saved progress; Restart game clears the current run and tutorial status but keeps trophies and achievements
 First-open and post-restart spotlight tutorial with a skip option
 Achievements panel with persistent unlocks, including finding a Mythic, selling 10 cars in one day, and reaching level 10 in one skill
 Version history available from the information button in the header
 Top-right button textures can be added at assets/ui/settings.png, assets/ui/trophies.png, assets/ui/achievements.png, and assets/ui/info.png
 Hover over skills to see what each one does
+Garage sorting supports price, rarity, and durability in either direction
 Debt reminder explains how to pay back a loan
 Sleep button (end day; debt accrues interest overnight)
 Increased chance to get robbed each night based on security and garage size (randomly selected car)

@@ -31,7 +31,7 @@ let dailySales = 0;
 let totalSales = 0;
 let totalCaughtThefts = 0;
 let pendingArrestEnding = false;
-let sleepCooldownTimer;
+let sleepCooldownFrame = 0;
 let saleTimer;
 let shipmentOrderedDay = null;
 const seenEndings = new Set();
@@ -58,6 +58,7 @@ const SKILL_DETAILS = [
 ];
 
 const RISK_LEVELS = ["L-", "L", "L+", "M-", "M", "M+", "H-", "H", "H+", "I"];
+const RARITY_SORT_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"];
 const BASE_GARAGE_CAPACITY = 3;
 const GOOD_ENDING_SALES = 16;
 const GOOD_ENDING_FUNDS = 10000;
@@ -426,7 +427,8 @@ function loadGame() {
         (savedState.skillResetPurchases !== undefined && !Number.isFinite(savedState.skillResetPurchases)) ||
         (savedState.premiumSkillPointPurchases !== undefined && !Number.isFinite(savedState.premiumSkillPointPurchases)) ||
         (savedState.shipmentOrderedDay !== null && !Number.isFinite(savedState.shipmentOrderedDay)) ||
-        !["price-asc", "price-desc", "name-asc", "name-desc"].includes(savedState.sortBy) ||
+        !["price-asc", "price-desc", "rarity-asc", "rarity-desc", "durability-asc", "durability-desc",
+            "name-asc", "name-desc"].includes(savedState.sortBy) ||
         !Array.isArray(savedState.garage) ||
         !Array.isArray(savedState.currentShipment) ||
         !Array.isArray(savedState.pendingShipments) ||
@@ -458,7 +460,7 @@ function loadGame() {
     pendingShipments = savedState.pendingShipments;
     nextCarId = savedState.nextCarId;
     skillPoints = savedState.skillPoints;
-    sortBy = savedState.sortBy;
+    sortBy = savedState.sortBy.startsWith("name-") ? "price-asc" : savedState.sortBy;
     theftsToday = savedState.theftsToday;
     securityLevel = savedState.securityLevel;
     garageExpansion = savedState.garageExpansion;
@@ -580,8 +582,8 @@ function endGame(key, title, message) {
         return;
     }
 
-    if(key == "taxes") {
-        document.getElementById("ending-continue").style = "display: none;";
+    if (key === "taxes" || key === "quit") {
+        document.getElementById("ending-continue").hidden = true;
     }
 
     gameEnded = true;
@@ -593,7 +595,10 @@ function endGame(key, title, message) {
     }
     updateTrophyDisplay();
     clearInterval(clockTimer);
-    clearInterval(sleepCooldownTimer);
+    if (sleepCooldownFrame) {
+        cancelAnimationFrame(sleepCooldownFrame);
+        sleepCooldownFrame = 0;
+    }
     clearInterval(saleTimer);
     document.getElementById("ending-title").textContent = title;
     document.getElementById("ending-message").textContent = message;
@@ -627,20 +632,26 @@ function continueAfterEnding() {
 }
 
 function restartGame() {
-    if (!window.confirm("Restart the game and delete your saved progress?")) {
+    if (!window.confirm("Restart the current run? Trophies and achievements will be kept, but the tutorial will play again.") ||
+        !window.confirm("Are you sure? This run's save will be erased and the tutorial will replay.")) {
         return;
     }
 
     restartingGame = true;
     try {
-        localStorage.removeItem(TUTORIAL_KEY);
         localStorage.removeItem(SAVE_KEY);
+        localStorage.removeItem(TUTORIAL_KEY);
     } catch (error) {
         restartingGame = false;
-        setSaveStatus(`Could not restart the game: ${error.message}`);
+        setSaveStatus(`Could not restart the current run: ${error.message}`);
         return;
     }
     window.location.reload();
+}
+
+function quitRun() {
+    document.getElementById("settings-dialog").close();
+    endGame("quit", "Run ended", "You chose to end this run. Your progress and unlocked trophies remain saved.");
 }
 
 function bankruptEnding() {
@@ -971,17 +982,19 @@ function renderGarage() {
     const visibleCars = garage.filter(car =>
         (!make || car.make === make) && (!model || car.model === model)
     );
-    const compareNames = (first, second) =>
-        `${first.make} ${first.model}`.localeCompare(`${second.make} ${second.model}`, undefined, { sensitivity: "base" });
-
     if (sortBy === "price-asc") {
-        visibleCars.sort((first, second) => first.price - second.price || compareNames(first, second));
+        visibleCars.sort((first, second) => first.price - second.price);
     } else if (sortBy === "price-desc") {
-        visibleCars.sort((first, second) => second.price - first.price || compareNames(first, second));
-    } else if (sortBy === "name-asc") {
-        visibleCars.sort(compareNames);
-    } else if (sortBy === "name-desc") {
-        visibleCars.sort((first, second) => compareNames(second, first));
+        visibleCars.sort((first, second) => second.price - first.price);
+    } else if (sortBy === "rarity-asc" || sortBy === "rarity-desc") {
+        const direction = sortBy === "rarity-asc" ? 1 : -1;
+        visibleCars.sort((first, second) =>
+            direction * (RARITY_SORT_ORDER.indexOf(first.rarity) - RARITY_SORT_ORDER.indexOf(second.rarity))
+        );
+    } else if (sortBy === "durability-asc") {
+        visibleCars.sort((first, second) => first.durability - second.durability);
+    } else if (sortBy === "durability-desc") {
+        visibleCars.sort((first, second) => second.durability - first.durability);
     }
 
     garageList.replaceChildren();
@@ -1093,8 +1106,26 @@ function updateSleepButton() {
     }
 
     const secondsRemaining = Math.max(0, Math.ceil((sleepAvailableAt - Date.now()) / 1000));
-    sleepButton.disabled = gameEnded || secondsRemaining > 0;
-    sleepButton.textContent = secondsRemaining > 0 ? `Sleep (${secondsRemaining}s)` : "Sleep";
+    const disabled = gameEnded || secondsRemaining > 0;
+    const label = secondsRemaining > 0 ? `Sleep (${secondsRemaining}s)` : "Sleep";
+    if (sleepButton.disabled !== disabled) {
+        sleepButton.disabled = disabled;
+    }
+    if (sleepButton.textContent !== label) {
+        sleepButton.textContent = label;
+    }
+
+    if (!disabled && sleepCooldownFrame) {
+        cancelAnimationFrame(sleepCooldownFrame);
+        sleepCooldownFrame = 0;
+    } else if (disabled && !gameEnded && !sleepCooldownFrame) {
+        sleepCooldownFrame = requestAnimationFrame(refreshSleepCountdown);
+    }
+}
+
+function refreshSleepCountdown() {
+    sleepCooldownFrame = 0;
+    updateSleepButton();
 }
 
 function resolveNightRobbery() {
@@ -1668,6 +1699,7 @@ document.getElementById("trophy-close").addEventListener("click", () => {
 document.getElementById("settings-close").addEventListener("click", () => {
     document.getElementById("settings-dialog").close();
 });
+document.getElementById("quit-run-button").addEventListener("click", quitRun);
 document.getElementById("restart-button").addEventListener("click", restartGame);
 document.addEventListener("visibilitychange", updateVisibilityPause);
 document.getElementById("repair-confirm").addEventListener("click", confirmRepair);
@@ -1685,7 +1717,7 @@ updateAll();
 updateStealButton();
 updateSleepButton();
 if (gameEnded && activeEndingKey) {
-    if (activeEndingKey === "taxes") {
+    if (activeEndingKey === "taxes" || activeEndingKey === "quit") {
         document.getElementById("ending-continue").hidden = true;
     }
     if (!document.getElementById("ending-dialog").open) {
@@ -1704,7 +1736,6 @@ if (gameEnded && activeEndingKey) {
         startGameTimers();
     }
 }
-sleepCooldownTimer = setInterval(updateSleepButton, 1000);
 window.addEventListener("beforeunload", saveGame);
 
 window.populateShipment = populateShipment;

@@ -78,8 +78,10 @@
                 <div class="sort-menu" id="sort-menu" role="group" aria-label="Sort by" hidden>
                     <button class="sort-option" type="button" data-sort="price-asc" aria-pressed="true">Price: Low to High</button>
                     <button class="sort-option" type="button" data-sort="price-desc" aria-pressed="false">Price: High to Low</button>
-                    <button class="sort-option" type="button" data-sort="name-asc" aria-pressed="false">Name: A-Z</button>
-                    <button class="sort-option" type="button" data-sort="name-desc" aria-pressed="false">Name: Z-A</button>
+                    <button class="sort-option" type="button" data-sort="rarity-asc" aria-pressed="false">Rarity: Common to Secret</button>
+                    <button class="sort-option" type="button" data-sort="rarity-desc" aria-pressed="false">Rarity: Secret to Common</button>
+                    <button class="sort-option" type="button" data-sort="durability-asc" aria-pressed="false">Durability: Low to High</button>
+                    <button class="sort-option" type="button" data-sort="durability-desc" aria-pressed="false">Durability: High to Low</button>
                 </div>
             </div>
             <label>Make
@@ -162,8 +164,9 @@
             <label class="pause-setting"><input id="pause-when-hidden" type="checkbox" checked>Pause when away</label>
             <p id="save-status" class="save-status" role="status" aria-live="polite">Autosave is on.</p>
             <div class="settings-actions">
+                <button id="quit-run-button" type="button">Quit Run</button>
                 <button id="settings-close" type="button">Close</button>
-                <button id="restart-button" type="button">Restart game</button>
+                <button id="restart-button" class="destructive-button" type="button">Restart game</button>
             </div>
         </div>
     </dialog>

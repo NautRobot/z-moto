@@ -500,8 +500,13 @@ p {
 
 .settings-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 8px;
+}
+
+.settings-actions #quit-run-button {
+    margin-right: auto;
 }
 
 .settings-actions button {
@@ -512,6 +517,14 @@ p {
     /* background: #D8F3DC; */
     color: #2D3A2E;
     cursor: pointer;
+}
+
+.settings-actions .destructive-button {
+    color: #b42318;
+}
+
+.settings-actions .destructive-button:hover {
+    color: #8f1710;
 }
 
 .save-status {
