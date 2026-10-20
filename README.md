@@ -33,18 +33,19 @@ BUYABLES:
 Garage Upgrade
 Shipment of Cars
 Garage Security
+Clear a stealing strike for ℤ1,000
 Skills - (Upgrade Stats)
 */
 
 /*
 ENDINGS:
-You get enough charisma, money, and sell enough cars to open your own dealership.
-You attempt to steal too many cars and get arrested.
-All your cars get stolen - if security is too low based on garage size
-You get enough extra skills to get a new job and quit!
-You get fired for not selling cars.
-Get a loan and don't pay it back.
-Reject the loan.
+You attempt to steal too many cars and get arrested. - Will (Handcuffs)
+All your cars get stolen - if security is too low based on garage size - Will (Robber)
+You get enough charisma, money, and sell enough cars to open your own dealership. - Will (Nameplate) / (Trophy)
+You get enough extra skills to get a new job and quit! - Will (Car)
+You get fired for not selling cars. - Zeke (Pink Slip)
+Get a loan and don't pay it back. - Zeke (Loan)
+Reject the loan. - Zeke (Broken Dollar Bill)
 */
 
 /*
@@ -54,8 +55,14 @@ Quota - for fired ending - 1 car a day
 Pause when leaving tab (disable in settings)
 Autosaves progress in browser storage
 Settings menu with pause and restart controls
-Sleep button (end day)
-Chance to get robbed each night based on security and size of garage (Randomly selected car)
+First-open and post-restart spotlight tutorial with a skip option
+Achievements panel with persistent unlocks, including finding a Mythic, selling 10 cars in one day, and reaching level 10 in one skill
+Version history available from the information button in the header
+Hover over skills to see what each one does
+Debt reminder explains how to pay back a loan
+Sleep button (end day; debt accrues interest overnight)
+Increased chance to get robbed each night based on security and garage size (randomly selected car)
+Secret rarity cars can be added to the secret car list with their own image asset
 Damage when stealing cars
 Buy shipment, next day you get it
 Buy 1 a day MAX
@@ -89,7 +96,7 @@ ADDITIONS
 =show shipment expected time (move cupboard up a little) - show "Shipment Done!" when its here; show day number and time when not done; in a black alarm-clock like box
 =save system
 =fix images (add new also)
+=trophy case to show endings
+=slow progression (lengthen endings)
 
-trophy case to show endings
-slow progression (lengthen endings)
 tutorial - black circle

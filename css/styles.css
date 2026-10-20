@@ -90,6 +90,21 @@ p {
     object-fit: contain;
 }
 
+.debt-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+}
+
+.debt-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
 .pause-setting {
     display: inline-flex;
     align-items: center;
@@ -99,8 +114,34 @@ p {
 }
 
 .settings-button {
-    color: #2D3A2E;
+    /* color: #2D3A2E; */
     font-size: 22px;
+}
+
+.header-controls {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+}
+
+.header-controls .header-icon-button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: 22px;
+}
+
+.header-controls .header-icon-button:hover {
+    transform: translateY(-1px);
+}
+
+.header-controls .header-icon-button:focus-visible,
+.trophy-close:focus-visible {
+    outline: 2px solid #426b4b;
+    outline-offset: 2px;
 }
 
 .pause-setting input {
@@ -129,7 +170,7 @@ p {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 #skillLabel,
@@ -467,13 +508,270 @@ p {
     padding: 7px 14px;
     border: 1px solid #70947a;
     border-radius: 3px;
-    background: #D8F3DC;
+    /* background: #D8F3DC; */
     color: #2D3A2E;
     cursor: pointer;
 }
 
 .save-status {
     font-size: 13px;
+}
+
+.trophy-dialog {
+    width: min(860px, calc(100vw - 24px));
+    max-height: min(88vh, 760px);
+    max-height: min(88svh, 760px);
+    padding: 0;
+    overflow-y: auto;
+    border: 2px solid #70947a;
+    border-radius: 4px;
+    background: #e0fce0;
+    color: #2D3A2E;
+}
+
+.trophy-dialog::backdrop {
+    background: rgb(20 34 23 / 65%);
+}
+
+.trophy-dialog-content {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+}
+
+.trophy-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.trophy-dialog-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.trophy-close {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid #70947a;
+    border-radius: 3px;
+    background: #D8F3DC;
+    cursor: pointer;
+    font-size: 25px;
+    line-height: 1;
+}
+
+.trophy-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.trophy-card {
+    display: grid;
+    grid-template-rows: minmax(32px, auto) 112px auto;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #8eb99a;
+    border-radius: 3px;
+    background: #B7E4C7;
+    text-align: center;
+}
+
+.trophy-card h3 {
+    align-self: center;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.trophy-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    height: 112px;
+    overflow: hidden;
+}
+
+.trophy-podium {
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.trophy-item {
+    position: absolute;
+    z-index: 1;
+    bottom: 55px;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.trophy-card.unlocked .trophy-item {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.trophy-status {
+    color: #536b58;
+    font-size: 12px;
+}
+
+.trophy-card.unlocked .trophy-status {
+    color: #315d3b;
+    font-weight: 700;
+}
+
+.achievement-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.achievement-card {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #8eb99a;
+    border-radius: 3px;
+    background: #B7E4C7;
+}
+
+.achievement-card h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.achievement-card p {
+    font-size: 13px;
+}
+
+.achievement-status {
+    color: #536b58;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.achievement-card.unlocked .achievement-status {
+    color: #315d3b;
+}
+
+.version-list {
+    display: grid;
+    gap: 10px;
+}
+
+.version-entry {
+    display: grid;
+    gap: 5px;
+    padding: 12px;
+    border-left: 4px solid #426b4b;
+    border-radius: 3px;
+    background: #B7E4C7;
+}
+
+.version-entry h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.version-entry p {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.tutorial-overlay {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    pointer-events: none;
+}
+
+.tutorial-overlay[hidden] {
+    display: none;
+}
+
+.tutorial-shade {
+    position: fixed;
+    background: rgb(0 0 0 / 94%);
+    pointer-events: auto;
+}
+
+.tutorial-spotlight {
+    position: fixed;
+    border: 3px solid #ffd35a;
+    border-radius: 6px;
+    box-shadow: 0 0 18px rgb(255 211 90 / 75%);
+    pointer-events: auto;
+}
+
+.tutorial-card {
+    position: fixed;
+    left: 50%;
+    width: min(440px, calc(100vw - 32px));
+    padding: 18px;
+    border: 2px solid #ffd35a;
+    border-radius: 8px;
+    background: #e0fce0;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 45%);
+    color: #2D3A2E;
+    pointer-events: auto;
+    transform: translateX(-50%);
+}
+
+.tutorial-progress {
+    margin-bottom: 6px;
+    color: #536b58;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.tutorial-card h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+}
+
+.tutorial-card > p:not(.tutorial-progress) {
+    line-height: 1.45;
+}
+
+.tutorial-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.tutorial-actions button {
+    min-height: 38px;
+    padding: 7px 12px;
+    border: 1px solid #70947a;
+    border-radius: 3px;
+    background: #D8F3DC;
+    cursor: pointer;
+}
+
+.tutorial-actions button:last-child {
+    background: #426b4b;
+    color: #fff;
 }
 
 .repair-dialog-actions button:disabled {
@@ -714,6 +1012,10 @@ p {
         justify-content: flex-start;
     }
 
+    .header-controls {
+        margin-left: auto;
+    }
+
     .skills,
     .upgrades {
         padding: 8px;
@@ -769,6 +1071,48 @@ p {
     .topBanner {
         gap: 6px 10px;
         padding: 6px 8px;
+    }
+
+    .trophy-dialog-content {
+        padding: 12px;
+    }
+
+    .trophy-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .trophy-card {
+        grid-template-rows: minmax(32px, auto) 100px auto;
+        padding: 6px;
+    }
+
+    .trophy-stage {
+        height: 100px;
+    }
+
+    .trophy-podium {
+        width: 70px;
+        height: 70px;
+    }
+
+    .trophy-item {
+        bottom: 50px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .achievement-list {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .achievement-card {
+        padding: 8px;
+    }
+
+    .tutorial-card {
+        padding: 14px;
     }
 
     #gameName {

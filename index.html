@@ -18,13 +18,24 @@
         <div class="zDolDisplay">
             <img src="assets/z-dol.png">
             <p id="excl" onclick="payDebt()" style="display: none;">!</p>
-            <p id="debt" style="display: none;"></p>
+            <button id="debt" class="debt-button" type="button" title="Pay debt" style="display: none;"></button>
             <span id="z-dols">100</span>
         </div>
         <p id="quota">Quota: <span id="quota-status">None (Days 1-3)</span></p>
-        <button id="settings-button" class="icon-button settings-button" type="button" aria-label="Settings" aria-haspopup="dialog" title="Settings">
-            <span aria-hidden="true">⚙️</span>
-        </button>
+        <div class="header-controls">
+            <button id="settings-button" class="icon-button header-icon-button settings-button" type="button" aria-label="Settings" aria-haspopup="dialog" title="Settings">
+                <span aria-hidden="true">⚙️</span>
+            </button>
+            <button id="trophy-button" class="icon-button header-icon-button" type="button" aria-label="Trophies" aria-haspopup="dialog" title="Trophies">
+                <span aria-hidden="true">🏆</span>
+            </button>
+            <button id="achievements-button" class="icon-button header-icon-button" type="button" aria-label="Achievements" aria-haspopup="dialog" title="Achievements">
+                <span aria-hidden="true">🏅</span>
+            </button>
+            <button id="info-button" class="icon-button header-icon-button" type="button" aria-label="Version history" aria-haspopup="dialog" title="Version history">
+                <span aria-hidden="true">ℹ️</span>
+            </button>
+        </div>
     </div>
 
     <!-- Skill Upgrades -->
@@ -141,6 +152,7 @@
     <dialog class="notice-dialog" id="debt-reminder-dialog" aria-labelledby="debt-reminder-title">
         <div class="notice-dialog-content">
             <h2 id="debt-reminder-title">Pay your debt!</h2>
+            <p id="debt-reminder-message"></p>
             <button id="debt-reminder-dismiss" type="button">OK</button>
         </div>
     </dialog>
@@ -155,12 +167,103 @@
             </div>
         </div>
     </dialog>
+    <dialog class="trophy-dialog" id="trophy-dialog" aria-labelledby="trophy-title">
+        <div class="trophy-dialog-content">
+            <header class="trophy-dialog-header">
+                <h2 id="trophy-title">Trophy Case</h2>
+                <button id="trophy-close" class="trophy-close" type="button" aria-label="Close trophies" title="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </header>
+            <div class="trophy-grid" id="trophy-grid">
+                <article class="trophy-card" data-ending="arrest">
+                    <h3 data-title="Arrested">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/handcuffs.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+                <article class="trophy-card" data-ending="bankrupt">
+                    <h3 data-title="Bankrupt">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/loan.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+                <article class="trophy-card" data-ending="dealership">
+                    <h3 data-title="Your own dealership">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/trophy.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+                <article class="trophy-card" data-ending="fired">
+                    <h3 data-title="Fired">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/pink-slip.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+                <article class="trophy-card" data-ending="quit">
+                    <h3 data-title="A fresh start">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/car.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+                <article class="trophy-card" data-ending="robbed">
+                    <h3 data-title="Robbed">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/robber.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+                <article class="trophy-card" data-ending="taxes">
+                    <h3 data-title="IRS">???</h3>
+                    <div class="trophy-stage"><img class="trophy-item" src="assets/moneyburn.png" alt="" hidden><img class="trophy-podium" src="assets/podium.png" alt=""></div>
+                    <p class="trophy-status">Locked</p>
+                </article>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="trophy-dialog" id="achievements-dialog" aria-labelledby="achievements-title">
+        <div class="trophy-dialog-content">
+            <header class="trophy-dialog-header">
+                <h2 id="achievements-title">Achievements</h2>
+                <button id="achievements-close" class="trophy-close" type="button" aria-label="Close achievements" title="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </header>
+            <div class="achievement-list" id="achievement-list" aria-live="polite"></div>
+        </div>
+    </dialog>
+    <dialog class="trophy-dialog" id="version-dialog" aria-labelledby="version-title">
+        <div class="trophy-dialog-content">
+            <header class="trophy-dialog-header">
+                <h2 id="version-title">Major versions</h2>
+                <button id="version-close" class="trophy-close" type="button" aria-label="Close version history" title="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </header>
+            <div class="version-list">
+                <article class="version-entry">
+                    <h3>Version 1.0 — Initial Update</h3>
+                    <p>The first release of Z-Moto.</p>
+                </article>
+            </div>
+        </div>
+    </dialog>
+    <div id="tutorial-overlay" class="tutorial-overlay" hidden aria-live="polite">
+        <div class="tutorial-shade" id="tutorial-shade-top"></div>
+        <div class="tutorial-shade" id="tutorial-shade-bottom"></div>
+        <div class="tutorial-shade" id="tutorial-shade-left"></div>
+        <div class="tutorial-shade" id="tutorial-shade-right"></div>
+        <div class="tutorial-spotlight" id="tutorial-spotlight" aria-hidden="true"></div>
+        <section class="tutorial-card" aria-labelledby="tutorial-title">
+            <p class="tutorial-progress" id="tutorial-progress"></p>
+            <h2 id="tutorial-title"></h2>
+            <p id="tutorial-description"></p>
+            <div class="tutorial-actions">
+                <button id="tutorial-skip" type="button">Skip tutorial</button>
+                <button id="tutorial-next" type="button">Next</button>
+            </div>
+        </section>
+    </div>
     <dialog class="notice-dialog" id="ending-dialog" aria-labelledby="ending-title">
         <div class="notice-dialog-content">
             <h2 id="ending-title"></h2>
             <p id="ending-message"></p>
             <div class="ending-actions">
                 <button id="ending-continue" type="button">Continue</button>
+                <button id="ending-trophies" type="button">Trophy Case</button>
                 <button id="ending-restart" type="button">Restart</button>
             </div>
         </div>

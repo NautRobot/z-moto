@@ -3,10 +3,18 @@ export const RARITY_WEIGHTS = {
   Common: 100,      // Economy / Mainstream (e.g. Civic, Corolla)
   Uncommon: 45,     // Entry Premium / Upper Mainstream (e.g. Mustang, Acura, Genesis)
   Rare: 15,         // Luxury / High Performance (e.g. BMW M, Porsche, Escalade)
-  Epic: 4,          // High-End Exotic / Supercars (e.g. Aston Martin, Bentley, GT-R)
-  Legendary: 1,     // Hypercars / Ultra-Luxury (e.g. Ferrari, Lambo, Rolls-Royce)
-  Mythic: 0.2       // Multi-million / Elite (e.g. Celestiq, SF90 XX)
+  Epic: 6,          // High-End Exotic / Supercars (e.g. Aston Martin, Bentley, GT-R)
+  Legendary: 2,     // Hypercars / Ultra-Luxury (e.g. Ferrari, Lambo, Rolls-Royce)
+  Mythic: 0.4,      // Multi-million / Elite (e.g. Celestiq, SF90 XX)
+  Secret: 0.2       // Hidden cars; match the previous Mythic drop weight
 };
+
+export const secretCars = [
+  { make: "Toy", model: "Car", image: "toy_car.jpg" },
+  { make: "Tesla", model: "Roadster", image: "roadster.jpg"},
+  { make: "Ice Cream", model: "Truck", image: "truck.jpg"},
+  { make: "Clown", model: "Car", image: "clown.jpg"}
+];
 
 export const cars = [
   {
