@@ -651,12 +651,19 @@ function restartGame() {
     window.location.reload();
 }
 
-function quitRun() {
+function quitRun(replaceActiveEnding = false) {
+    const endingDialog = document.getElementById("ending-dialog");
+    if (replaceActiveEnding && gameEnded) {
+        endingDialog.close();
+        gameEnded = false;
+        activeEndingKey = null;
+    }
     document.getElementById("settings-dialog").close();
     endGame("quit-run", "Run ended", "You chose to end this run. Your progress and unlocked trophies remain saved.");
 }
 
 function bankruptEnding() {
+    document.getElementById("bankrupt-dialog").close();
     endGame("bankrupt", "Bankrupt!", "After rejecting the IRS, the police found you. Your dealership has been seized.");
 }
 
@@ -1656,7 +1663,7 @@ document.getElementById("fine-dismiss").addEventListener("click", () => {
     }
 });
 document.getElementById("ending-continue").addEventListener("click", continueAfterEnding);
-document.getElementById("ending-restart").addEventListener("click", restartGame);
+document.getElementById("ending-restart").addEventListener("click", () => quitRun(true));
 document.getElementById("bankrupt-loan").addEventListener("click", acceptLoan);
 document.getElementById("bankrupt-restart").addEventListener("click", bankruptEnding);
 document.getElementById("debt-reminder-dismiss").addEventListener("click", () => {
