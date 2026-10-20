@@ -58,6 +58,7 @@ Settings menu with pause and restart controls
 First-open and post-restart spotlight tutorial with a skip option
 Achievements panel with persistent unlocks, including finding a Mythic, selling 10 cars in one day, and reaching level 10 in one skill
 Version history available from the information button in the header
+Top-right button textures can be added at assets/ui/settings.png, assets/ui/trophies.png, assets/ui/achievements.png, and assets/ui/info.png
 Hover over skills to see what each one does
 Debt reminder explains how to pay back a loan
 Sleep button (end day; debt accrues interest overnight)
