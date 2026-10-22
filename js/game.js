@@ -705,6 +705,7 @@ function quitRun() {
 function bankruptEnding() {
     document.getElementById("bankrupt-dialog").close();
     endGame("bankrupt", "Bankrupt!", "After rejecting the IRS, the police found you. Your dealership has been seized.");
+    document.getElementById("ending-continue").hidden = true;
 }
 
 function acceptLoan() {
@@ -857,6 +858,7 @@ function updateDebtStatus() {
 
     if (day >= debtDay + 7) {
         endGame("taxes", "IRS!", "The IRS caught you. You had a week.");
+        document.getElementById("ending-continue").hidden = true;
         return;
     }
 
@@ -1151,6 +1153,7 @@ function advanceToMorning() {
 
     if (day >= 4 && dailySales < DAILY_SALES_QUOTA) {
         endGame("fired", "You were fired", `You missed the daily quota of ${DAILY_SALES_QUOTA} car. The dealership let you go.`);
+        document.getElementById("ending-continue").hidden = true;
         return;
     }
 
@@ -1715,7 +1718,7 @@ document.getElementById("fine-dismiss").addEventListener("click", () => {
     if (pendingArrestEnding) {
         pendingArrestEnding = false;
         endGame("arrest", "Arrested", "After repeated thefts, the police caught up with you. Your dealership run is over.");
-        document.getElementById("ending-continue").style = "display: none;";
+        document.getElementById("ending-continue").hidden = true;
     }
 });
 document.getElementById("ending-continue").addEventListener("click", continueAfterEnding);
