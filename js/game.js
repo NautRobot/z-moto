@@ -78,6 +78,7 @@ const SAVE_KEY = "z-moto-save";
 const TROPHY_KEY = "z-moto-trophies";
 const ACHIEVEMENT_KEY = "z-moto-achievements";
 const TUTORIAL_KEY = "z-moto-tutorial-complete";
+const CARRIED_CARS_KEY = "z-moto-carried-favorites";
 const TROPHY_ENDINGS = new Set(["arrest", "bankrupt", "dealership", "fired", "quit", "robbed", "taxes"]);
 const SAVE_VERSION = 1;
 const TUTORIAL_STEPS = [
@@ -104,7 +105,7 @@ const TUTORIAL_STEPS = [
     {
         target: ".garage",
         title: "Manage your garage",
-        description: "Set car prices and wait for buyers. Click a car's image to repair it, and use the filters and sort menu to find cars."
+        description: "Set car prices and wait for buyers. Click a car's image to repair it, or click its star to favorite it. Favorited cars cannot be sold and carry over when you quit a run. Use the filters and sort menu to find cars."
     }
 ];
 const ACHIEVEMENTS = [
@@ -174,7 +175,7 @@ function calculateRecommendedPrice(car) {
 }
 
 function createCar(make, model, rarity, image) {
-    const car = { make, model, rarity, durability: 100, ...(image ? { image } : {}) };
+    const car = { make, model, rarity, durability: 100, favorite: false, ...(image ? { image } : {}) };
     const recommendedPrice = calculateRecommendedPrice(car);
 
     return {
@@ -333,6 +334,7 @@ function saveGame() {
 
     try {
         localStorage.setItem(SAVE_KEY, JSON.stringify(getSaveState()));
+        localStorage.removeItem(CARRIED_CARS_KEY);
         setSaveStatus("Game saved automatically.");
     } catch (error) {
         setSaveStatus(`Could not save the game: ${error.message}`);
@@ -400,7 +402,10 @@ function loadGame() {
     try {
         const savedGame = localStorage.getItem(SAVE_KEY);
         if (!savedGame) {
-            setSaveStatus("Autosave is on. No previous save found.");
+            loadCarriedFavorites();
+            if (garage.length === 0) {
+                setSaveStatus("Autosave is on. No previous save found.");
+            }
             return;
         }
 
@@ -507,12 +512,35 @@ function loadGame() {
     setSaveStatus("Saved game loaded.");
 }
 
+function loadCarriedFavorites() {
+    try {
+        const savedCars = localStorage.getItem(CARRIED_CARS_KEY);
+        if (!savedCars) {
+            return;
+        }
+
+        const parsedCars = JSON.parse(savedCars);
+        if (!Array.isArray(parsedCars) ||
+            !parsedCars.every(car => isSavedCar(car) && car.favorite === true)) {
+            setSaveStatus("The carried favorite cars are invalid.");
+            return;
+        }
+
+        garage = parsedCars;
+        nextCarId = garage.reduce((id, car) => Math.max(id, car.id + 1), nextCarId);
+        setSaveStatus("Favorite cars carried over from your last run.");
+    } catch (error) {
+        setSaveStatus(`Could not load favorite cars: ${error.message}`);
+    }
+}
+
 function isSavedCar(car) {
     return car && typeof car === "object" &&
         typeof car.make === "string" &&
         typeof car.model === "string" &&
         typeof car.rarity === "string" &&
         Number.isFinite(car.durability) &&
+        (car.favorite === undefined || typeof car.favorite === "boolean") &&
         (car.saleEligibleAt === undefined || Number.isFinite(car.saleEligibleAt)) &&
         Number.isFinite(car.recommendedPrice) &&
         Number.isFinite(car.price) &&
@@ -643,6 +671,7 @@ function restartGame() {
         localStorage.removeItem(TROPHY_KEY);
         localStorage.removeItem(ACHIEVEMENT_KEY);
         localStorage.removeItem(TUTORIAL_KEY);
+        localStorage.removeItem(CARRIED_CARS_KEY);
     } catch (error) {
         restartingGame = false;
         setSaveStatus(`Could not restart the current run: ${error.message}`);
@@ -658,6 +687,12 @@ function quitRun() {
 
     restartingGame = true;
     try {
+        const favoriteCars = garage.filter(car => car.favorite === true);
+        if (favoriteCars.length > 0) {
+            localStorage.setItem(CARRIED_CARS_KEY, JSON.stringify(favoriteCars));
+        } else {
+            localStorage.removeItem(CARRIED_CARS_KEY);
+        }
         localStorage.removeItem(SAVE_KEY);
     } catch (error) {
         restartingGame = false;
@@ -727,7 +762,7 @@ function processCarSales() {
 
     for (let i = garage.length - 1; i >= 0; i--) {
         const car = garage[i];
-        if (Date.now() < (car.saleEligibleAt ?? 0)) {
+        if (car.favorite || Date.now() < (car.saleEligibleAt ?? 0)) {
             continue;
         }
 
@@ -1028,6 +1063,8 @@ function renderGarage() {
         const image = carDisplay.querySelector(".car-image");
         const imageButton = carDisplay.querySelector(".car-image-action");
         const repairHint = carDisplay.querySelector(".repair-hint");
+        const favoriteButton = carDisplay.querySelector(".car-favorite-button");
+        const favoriteIcon = carDisplay.querySelector(".car-favorite-icon");
         const priceInput = carDisplay.querySelector(".car-price-input");
 
         image.src = getCarImagePath(car);
@@ -1036,6 +1073,19 @@ function renderGarage() {
             image.hidden = true;
         }, { once: true });
         carDisplay.querySelector(".car-name").textContent = `${car.make} ${car.model}`;
+        favoriteButton.setAttribute("aria-pressed", String(Boolean(car.favorite)));
+        favoriteButton.setAttribute("aria-label", car.favorite
+            ? `Remove ${car.make} ${car.model} from favorites`
+            : `Favorite ${car.make} ${car.model}`);
+        favoriteButton.title = car.favorite
+            ? "Favorited - cannot be sold; carries over when you quit a run"
+            : "Favorite this car";
+        favoriteIcon.src = car.favorite ? "assets/star-full.png" : "assets/star-empty.png";
+        favoriteButton.addEventListener("click", () => {
+            car.favorite = !car.favorite;
+            saveGame();
+            renderGarage();
+        });
         carDisplay.querySelector(".car-rarity").textContent = car.rarity;
         carDisplay.querySelector(".car-stat span").textContent = `${car.durability}%`;
         carDisplay.querySelector(".car-price span").textContent = formatMoney(car.price);
@@ -1489,6 +1539,7 @@ function attemptTheft(car, risk) {
     addCarToGarage(car);
     recordHistory(`You stole a ${car.make} ${car.model} (${car.durability}% durability).`);
     renderGarage();
+    updateAll();
 }
 
 function toggleSortMenu() {
