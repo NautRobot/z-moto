@@ -49,10 +49,267 @@ p {
 .skills,
 .upgrades,
 .actions,
-.garage {
+.garage,
+.jail-panel {
     min-width: 0;
     border: 5px solid var(--panel-border);
     background-color: var(--panel);
+}
+
+.jail-panel[hidden] {
+    display: none;
+}
+
+body.jail-mode {
+    --panel: #c2c3c1;
+    --panel-soft: #b5b6b4;
+    --panel-border: #e0e0de;
+    color: #292a29;
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+        "header header header"
+        "skills jail jail"
+        "skills jail jail";
+    background-color: #d3d3d1;
+}
+
+.jail-mode .skills {
+    grid-area: skills;
+    grid-row: 2 / 4;
+}
+
+.jail-mode .jail-panel {
+    grid-area: jail;
+    grid-column: 2 / 4;
+    grid-row: 2 / 4;
+}
+
+.jail-mode .upgrades,
+.jail-mode .actions,
+.jail-mode .garage,
+.jail-mode #quota,
+.jail-mode #time {
+    display: none;
+}
+
+.jail-cash-display,
+.jail-actions-display {
+    display: none;
+}
+
+.jail-mode .jail-cash-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.jail-mode .jail-actions-display {
+    display: block;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+.jail-mode .zDolDisplay img,
+.jail-mode #excl,
+.jail-mode #debt,
+.jail-mode #z-dols {
+    display: none !important;
+}
+
+.jail-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+    padding: 20px;
+    overflow: auto;
+    background: #d3d3d1;
+    color: #292a29;
+}
+
+.jail-suspicion-panel {
+    display: none;
+}
+
+.jail-mode .jail-suspicion-panel {
+    display: grid;
+    gap: 5px;
+    padding: 8px 0;
+    border-top: 1px solid #a3a5a3;
+    border-bottom: 1px solid #a3a5a3;
+}
+
+.jail-suspicion-panel label {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.jail-suspicion-panel progress {
+    width: 100%;
+    height: 10px;
+    accent-color: #737673;
+}
+
+.jail-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #8a918a;
+}
+
+.jail-header h1 {
+    margin: 2px 0 0;
+    font-size: 28px;
+}
+
+.jail-security-status {
+    align-self: center;
+    padding: 6px 9px;
+    border: 1px solid #777a77;
+    background: #b5b6b4;
+    color: #292a29;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.jail-kicker {
+    color: #5f625f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.jail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.jail-stat {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+    min-height: 78px;
+    padding: 10px;
+    border: 1px solid #a3a5a3;
+    background: #dededc;
+}
+
+.jail-stat > span,
+.jail-stat-meter label {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.jail-stat > strong {
+    font-size: 20px;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.jail-stat > small {
+    color: #555755;
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.jail-stat-meter label {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.jail-stat-meter progress {
+    width: 100%;
+    height: 12px;
+    accent-color: #737673;
+}
+
+.jail-economy {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid #a3a5a3;
+    background: #dededc;
+    font-size: 13px;
+}
+
+.jail-economy button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 6px 10px;
+    border: 1px solid #777a77;
+    border-radius: 3px;
+    background: #e1e1df;
+    cursor: pointer;
+}
+
+.jail-economy button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.jail-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.jail-actions button {
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    min-height: 48px;
+    padding: 8px 12px;
+    border: 1px solid #777a77;
+    border-radius: 3px;
+    background: #e1e1df;
+    cursor: pointer;
+    text-align: left;
+}
+
+.jail-actions button strong {
+    font-size: 14px;
+}
+
+.jail-actions button small {
+    color: #555755;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.jail-actions button:hover:not(:disabled) {
+    background: #eeeeec;
+}
+
+.jail-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.jail-history {
+    display: grid;
+    gap: 6px;
+    min-height: 80px;
+    padding-top: 10px;
+    border-top: 1px solid #aeb4ad;
+}
+
+.jail-history-entry {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.jail-event-hint {
+    color: #555755;
+    font-size: 12px;
 }
 
 .topBanner {
@@ -439,6 +696,69 @@ p {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+}
+
+.display-garage {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 30%;
+    min-height: 96px;
+    padding-top: 8px;
+    border-top: 1px solid #8eb99a;
+}
+
+.display-garage h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.display-garage-list {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 8px;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.display-car-card {
+    display: grid;
+    flex: 0 0 132px;
+    grid-template-rows: 64px minmax(0, 1fr);
+    gap: 4px;
+    min-height: 0;
+    padding: 5px;
+    border: 1px solid #a6b8a8;
+    background: #edf5ed;
+}
+
+.display-car-image {
+    width: 100%;
+    height: 64px;
+    object-fit: cover;
+}
+
+.display-car-details {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.display-car-details h3 {
+    margin: 0 0 2px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.display-car-details p,
+.display-garage-empty {
+    font-size: 11px;
+}
+
+.display-garage-empty {
+    align-self: center;
+    padding: 4px;
 }
 
 .garage-empty {
@@ -1057,6 +1377,30 @@ p {
             "garage garage";
     }
 
+    body.jail-mode {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto minmax(0, 1fr) minmax(140px, auto);
+        grid-template-areas:
+            "header header"
+            "jail jail"
+            "skills skills";
+    }
+
+    .jail-mode .jail-panel {
+        grid-column: 1 / 3;
+        grid-row: 2;
+    }
+
+    .jail-mode .skills {
+        grid-column: 1 / 3;
+        grid-row: 3;
+        max-height: 220px;
+    }
+
+    .jail-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .topBanner {
         flex-wrap: wrap;
         justify-content: flex-start;
@@ -1121,6 +1465,30 @@ p {
     .topBanner {
         gap: 6px 10px;
         padding: 6px 8px;
+    }
+
+    .jail-panel {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .jail-header {
+        align-items: start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .jail-header h1 {
+        font-size: 24px;
+    }
+
+    .jail-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .jail-economy {
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .trophy-dialog-content {
@@ -1354,4 +1722,96 @@ p {
         grid-column: 2;
         width: 100px;
     }
+}
+
+body.jail-mode button:not(.header-icon-button),
+body.jail-mode input,
+body.jail-mode select {
+    border-color: #777a77;
+    background-color: #e1e1df;
+    color: #292a29;
+}
+
+body.jail-mode .topBanner,
+body.jail-mode .skills {
+    color: #292a29;
+}
+
+body.jail-mode .skill-upgrade,
+body.jail-mode .icon-button {
+    border-color: #777a77;
+    background: #e1e1df;
+    color: #292a29;
+}
+
+body.jail-mode .header-icon-button img,
+body.jail-mode img {
+    filter: grayscale(1);
+}
+
+body.jail-mode .header-controls .header-icon-button {
+    background: transparent;
+}
+
+body.jail-mode .notice-dialog,
+body.jail-mode .trophy-dialog,
+body.jail-mode .theft-dialog {
+    border-color: #777a77;
+    background: #c2c3c1;
+    color: #292a29;
+}
+
+body.jail-mode .notice-dialog::backdrop,
+body.jail-mode .trophy-dialog::backdrop,
+body.jail-mode .theft-dialog::backdrop {
+    background: rgb(35 36 35 / 65%);
+}
+
+body.jail-mode .trophy-card,
+body.jail-mode .achievement-card,
+body.jail-mode .version-entry {
+    border-color: #898b89;
+    background: #b5b6b4;
+}
+
+body.jail-mode .trophy-status,
+body.jail-mode .achievement-status,
+body.jail-mode .achievement-card.unlocked .achievement-status,
+body.jail-mode .trophy-card.unlocked .trophy-status {
+    color: #4b4d4b;
+}
+
+body.jail-mode .version-entry {
+    border-left-color: #777a77;
+}
+
+body.jail-mode .tutorial-card {
+    border-color: #777a77;
+    background: #d3d3d1;
+    color: #292a29;
+}
+
+body.jail-mode .tutorial-progress {
+    color: #555755;
+}
+
+body.jail-mode .tutorial-spotlight {
+    border-color: #8b8d8b;
+    box-shadow: 0 0 18px rgb(100 102 100 / 65%);
+}
+
+body.jail-mode .tutorial-actions button:last-child {
+    background: #777a77;
+    color: #fff;
+}
+
+body.jail-mode .debt-button:focus-visible,
+body.jail-mode .header-controls .header-icon-button:focus-visible,
+body.jail-mode .trophy-close:focus-visible {
+    outline-color: #666866;
+}
+
+body.jail-mode .pause-setting input,
+body.jail-mode progress {
+    accent-color: #737673;
 }

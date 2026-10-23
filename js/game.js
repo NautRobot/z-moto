@@ -34,6 +34,21 @@ let pendingArrestEnding = false;
 let sleepCooldownFrame = 0;
 let saleTimer;
 let shipmentOrderedDay = null;
+let jailMode = false;
+let jailDay = 1;
+let jailActionsLeft = 3;
+let jailCash = 0;
+let jailSuspicion = 0;
+let jailDisposition = 0;
+let jailInmateWork = 0;
+let jailGuardTalks = 0;
+let jailLastWaitDay = -1;
+let jailWaitCount = 0;
+let jailHighSecurity = false;
+let jailBreakoutFailures = 0;
+let jailEscapedOnce = false;
+let jailWelcomeComplete = false;
+let jailPendingEvent = null;
 const seenEndings = new Set();
 const unlockedTrophies = new Set();
 const unlockedAchievements = new Set();
@@ -56,6 +71,14 @@ const SKILL_DETAILS = [
     ["handiness", "Handiness", "Repairs more durability per level at a lower cost and reduces damage when stealing."],
     ["strength", "Strength", "Adds one garage space per level."]
 ];
+const JAIL_SKILL_DETAILS = [
+    ["charisma", "Charisma", "Helps convince guards and lowers bribe costs."],
+    ["expertise", "Expertise", "Improves your breakout odds."],
+    ["networking", "Networking", "Increases pay from work crew shifts."],
+    ["stealth", "Stealth", "Improves breakout odds and reduces suspicion."],
+    ["handiness", "Handiness", "Improves breakout odds and work crew pay."],
+    ["strength", "Strength", "Improves your breakout odds."]
+];
 
 const RISK_LEVELS = ["L-", "L", "L+", "M-", "M", "M+", "H-", "H", "H+", "I"];
 const RARITY_SORT_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"];
@@ -65,6 +88,18 @@ const GOOD_ENDING_FUNDS = 10000;
 const QUIT_ENDING_SKILL_LEVELS = 10;
 const ARREST_ENDING_CAUGHT = 3;
 const DAILY_SALES_QUOTA = 1;
+const JAIL_DAY_LIMIT = 7;
+const JAIL_ACTIONS_PER_DAY = 3;
+const JAIL_WAIT_COOLDOWN_DAYS = 3;
+const JAIL_WAITS_BEFORE_HIGH_SECURITY = 2;
+const JAIL_HIGH_SECURITY_BREAKOUT_PENALTY = 50;
+const JAIL_GOOD_WORK_REQUIRED = 4;
+const JAIL_GOOD_TALKS_REQUIRED = 4;
+const JAIL_GOOD_CHARISMA_REQUIRED = 4;
+const JAIL_GOOD_RECORD_REQUIRED = 18;
+const JAIL_JOB_PAY = 50;
+const JAIL_SKILL_POINT_COST = 75;
+const JAIL_BRIBE_BASE_COST = 100;
 const SLEEP_COOLDOWN_MS = 30_000;
 const GAME_HOUR_INTERVAL_MS = 10_000;
 const EXPERTISE_INTERVAL_REDUCTION_MS = 2_000;
@@ -78,6 +113,7 @@ const SAVE_KEY = "z-moto-save";
 const TROPHY_KEY = "z-moto-trophies";
 const ACHIEVEMENT_KEY = "z-moto-achievements";
 const TUTORIAL_KEY = "z-moto-tutorial-complete";
+const JAIL_TUTORIAL_KEY = "z-moto-jail-tutorial-complete";
 const CARRIED_CARS_KEY = "z-moto-carried-favorites";
 const TROPHY_ENDINGS = new Set(["arrest", "bankrupt", "dealership", "fired", "quit", "robbed", "taxes"]);
 const SAVE_VERSION = 1;
@@ -105,7 +141,24 @@ const TUTORIAL_STEPS = [
     {
         target: ".garage",
         title: "Manage your garage",
-        description: "Set car prices and wait for buyers. Click a car's image to repair it, or click its star to favorite it. Favorited cars cannot be sold and carry over when you quit a run. Use the filters and sort menu to find cars."
+        description: "Set car prices and wait for buyers. Click a car's image to repair it, or move it to the permanent display garage with its star. Display cars have no price or controls. Use the filters and sort menu to find cars."
+    }
+];
+const JAIL_TUTORIAL_STEPS = [
+    {
+        target: ".jail-stats",
+        title: "Choose your way out",
+        description: "Work with inmates and talk to guards for a quiet release. Good shifts and convincing conversations are not guaranteed. Breakouts get harder after failed attempts; repeated waiting leads to high security."
+    },
+    {
+        target: ".skills",
+        title: "Use your skills",
+        description: "Your dealership skill levels are free points to reassign. Charisma helps persuade guards; Strength, Stealth, and Expertise help a breakout; Networking and Handiness improve work pay."
+    },
+    {
+        target: ".jail-actions",
+        title: "Choose an action",
+        description: "Work with inmates to build a good record and earn cash. Talk to guards to make your case, or break out using Strength and Stealth. Every action advances the day; skill-point purchases do not use actions."
     }
 ];
 const ACHIEVEMENTS = [
@@ -187,6 +240,7 @@ function createCar(make, model, rarity, image) {
 }
 
 let garage = [];
+let displayGarage = [];
 
 function addCarToGarage(car) {
     car.saleEligibleAt = Date.now() + CAR_SALE_COOLDOWN_MS;
@@ -197,6 +251,7 @@ function addCarToGarage(car) {
 function getOwnedCars() {
     return [
         ...garage,
+        ...displayGarage,
         ...currentShipment,
         ...pendingShipments.flatMap(shipment => shipment.cars)
     ];
@@ -315,7 +370,23 @@ function getSaveState() {
         totalCaughtThefts,
         pendingArrestEnding,
         shipmentOrderedDay,
+        jailMode,
+        jailDay,
+        jailActionsLeft,
+        jailCash,
+        jailSuspicion,
+        jailDisposition,
+        jailInmateWork,
+        jailGuardTalks,
+        jailLastWaitDay,
+        jailWaitCount,
+        jailHighSecurity,
+        jailBreakoutFailures,
+        jailEscapedOnce,
+        jailWelcomeComplete,
+        jailPendingEvent,
         garage,
+        displayGarage,
         skills,
         seenEndings: [...seenEndings],
         history: [...document.querySelectorAll("#history .history-entry")].map(entry => entry.textContent)
@@ -428,6 +499,16 @@ function loadGame() {
         typeof savedState.gameEnded !== "boolean" ||
         typeof savedState.pauseWhenHidden !== "boolean" ||
         typeof savedState.pendingArrestEnding !== "boolean" ||
+        (savedState.jailMode !== undefined && typeof savedState.jailMode !== "boolean") ||
+        ["jailDay", "jailActionsLeft", "jailCash", "jailSuspicion", "jailDisposition", "jailInmateWork", "jailGuardTalks", "jailLastWaitDay", "jailWaitCount", "jailBreakoutFailures"]
+            .some(field => savedState[field] !== undefined && !Number.isFinite(savedState[field])) ||
+        (savedState.jailHighSecurity !== undefined && typeof savedState.jailHighSecurity !== "boolean") ||
+        (savedState.jailEscapedOnce !== undefined && typeof savedState.jailEscapedOnce !== "boolean") ||
+        (savedState.jailWelcomeComplete !== undefined && typeof savedState.jailWelcomeComplete !== "boolean") ||
+        (savedState.jailPendingEvent !== undefined && savedState.jailPendingEvent !== null &&
+            (typeof savedState.jailPendingEvent !== "object" ||
+                typeof savedState.jailPendingEvent.title !== "string" ||
+                typeof savedState.jailPendingEvent.message !== "string")) ||
         (savedState.activeEndingKey !== null && typeof savedState.activeEndingKey !== "string") ||
         typeof savedState.endingTitle !== "string" ||
         typeof savedState.endingMessage !== "string" ||
@@ -437,6 +518,7 @@ function loadGame() {
         !["price-asc", "price-desc", "rarity-asc", "rarity-desc", "durability-asc", "durability-desc",
             "name-asc", "name-desc"].includes(savedState.sortBy) ||
         !Array.isArray(savedState.garage) ||
+        (savedState.displayGarage !== undefined && !Array.isArray(savedState.displayGarage)) ||
         !Array.isArray(savedState.currentShipment) ||
         !Array.isArray(savedState.pendingShipments) ||
         !Array.isArray(savedState.seenEndings) ||
@@ -446,6 +528,7 @@ function loadGame() {
         !savedState.history.every(entry => typeof entry === "string") ||
         !savedState.seenEndings.every(ending => typeof ending === "string") ||
         !savedState.garage.every(isSavedCar) ||
+        (savedState.displayGarage !== undefined && !savedState.displayGarage.every(isSavedCar)) ||
         !savedState.currentShipment.every(isSavedCar) ||
         !savedState.pendingShipments.every(shipment =>
             shipment && Number.isFinite(shipment.arrivalDay) &&
@@ -484,7 +567,24 @@ function loadGame() {
     totalCaughtThefts = savedState.totalCaughtThefts;
     pendingArrestEnding = savedState.pendingArrestEnding;
     shipmentOrderedDay = savedState.shipmentOrderedDay;
-    garage = savedState.garage;
+    jailMode = savedState.jailMode ?? false;
+    jailDay = savedState.jailDay ?? 1;
+    jailActionsLeft = savedState.jailActionsLeft ?? 3;
+    jailCash = savedState.jailCash ?? 0;
+    jailSuspicion = savedState.jailSuspicion ?? 0;
+    jailDisposition = savedState.jailDisposition ?? 0;
+    jailInmateWork = savedState.jailInmateWork ?? 0;
+    jailGuardTalks = savedState.jailGuardTalks ?? 0;
+    jailLastWaitDay = savedState.jailLastWaitDay ?? -1;
+    jailWaitCount = savedState.jailWaitCount ?? 0;
+    jailHighSecurity = savedState.jailHighSecurity ?? false;
+    jailBreakoutFailures = savedState.jailBreakoutFailures ?? 0;
+    jailEscapedOnce = savedState.jailEscapedOnce ?? false;
+    jailWelcomeComplete = savedState.jailWelcomeComplete ?? false;
+    jailPendingEvent = savedState.jailPendingEvent ?? null;
+    const legacyFavoriteCars = savedState.garage.filter(car => car.favorite === true);
+    garage = savedState.garage.filter(car => car.favorite !== true);
+    displayGarage = [...(savedState.displayGarage ?? []), ...legacyFavoriteCars];
     for (const key of Object.keys(skills)) {
         skills[key] = savedState.skills[key];
     }
@@ -528,8 +628,8 @@ function loadCarriedFavorites() {
             return;
         }
 
-        garage = parsedCars;
-        nextCarId = garage.reduce((id, car) => Math.max(id, car.id + 1), nextCarId);
+        displayGarage = parsedCars;
+        nextCarId = displayGarage.reduce((id, car) => Math.max(id, car.id + 1), nextCarId);
         setSaveStatus("Favorite cars carried over from your last run.");
     } catch (error) {
         setSaveStatus(`Could not load favorite cars: ${error.message}`);
@@ -612,9 +712,8 @@ function endGame(key, title, message) {
         return;
     }
 
-    if (key === "taxes") {
-        document.getElementById("ending-continue").hidden = true;
-    }
+    document.getElementById("ending-continue").hidden =
+        key === "taxes" || (key.startsWith("jail-") && key !== "jail-breakout");
 
     gameEnded = true;
     activeEndingKey = key;
@@ -644,6 +743,11 @@ function continueAfterEnding() {
     }
 
     seenEndings.add(activeEndingKey);
+    if (activeEndingKey === "arrest") {
+        enterJailMode();
+        return;
+    }
+
     if (activeEndingKey === "fired") {
         day++;
         hour = 8;
@@ -661,6 +765,350 @@ function continueAfterEnding() {
     updateSleepButton();
 }
 
+function enterJailMode() {
+    const earnedSkillPoints = getAllocatedSkillPoints();
+    skillPoints += earnedSkillPoints;
+    for (const key of Object.keys(skills)) {
+        skills[key] = 0;
+    }
+
+    jailMode = true;
+    jailDay = 1;
+    jailActionsLeft = JAIL_ACTIONS_PER_DAY;
+    jailCash = 0;
+    jailSuspicion = 0;
+    jailDisposition = 0;
+    jailInmateWork = 0;
+    jailGuardTalks = 0;
+    jailLastWaitDay = -1;
+    jailWaitCount = 0;
+    jailHighSecurity = false;
+    jailBreakoutFailures = 0;
+    jailWelcomeComplete = false;
+    jailPendingEvent = null;
+    gameEnded = false;
+    activeEndingKey = null;
+    document.getElementById("ending-dialog").close();
+    document.body.classList.add("jail-mode");
+    document.getElementById("jail-panel").hidden = false;
+    renderSkills();
+    updateJailPanel();
+    recordJailHistory("You arrive at the cell block.");
+    document.getElementById("jail-welcome-dialog").showModal();
+    saveGame();
+}
+
+function beginJailChallenge() {
+    jailWelcomeComplete = true;
+    document.getElementById("jail-welcome-dialog").close();
+    saveGame();
+
+    let tutorialComplete = false;
+    try {
+        tutorialComplete = localStorage.getItem(JAIL_TUTORIAL_KEY) === "completed";
+    } catch (error) {
+        setSaveStatus(`Could not load the jail tutorial: ${error.message}`);
+    }
+    if (!tutorialComplete) {
+        startTutorial();
+    } else if (jailPendingEvent) {
+        showJailEvent();
+    }
+}
+
+function buyJailSkillPoint() {
+    const cost = getJailSkillPointCost();
+    if (!jailMode || jailCash < cost) {
+        return;
+    }
+
+    jailCash -= cost;
+    skillPoints++;
+    renderSkills();
+    updateJailPanel();
+    recordJailHistory(`Bought 1 skill point for ${formatMoney(cost)}. This purchase did not use an action.`);
+}
+
+function maybeTriggerJailEvent() {
+    if (Math.random() >= 0.12 || (jailDay === JAIL_DAY_LIMIT && jailActionsLeft === 0)) {
+        return false;
+    }
+
+    const eventIndex = Math.floor(Math.random() * 3);
+    let title;
+    let message;
+    if (eventIndex === 0) {
+        jailSuspicion = Math.min(100, jailSuspicion + 10);
+        jailDisposition--;
+        title = "Guard inspection";
+        message = "A guard checked your cell. Suspicion rose by 10.";
+    } else if (eventIndex === 1) {
+        title = "Extra kitchen shift";
+        jailCash += 30;
+        jailDisposition++;
+        message = `The kitchen supervisor paid you ${formatMoney(30)} for covering a shift.`;
+    } else if (eventIndex === 2) {
+        jailInmateWork = Math.min(JAIL_GOOD_WORK_REQUIRED, jailInmateWork + 1);
+        jailDisposition++;
+        title = "An inmate speaks up";
+        message = "An inmate vouched for your work crew. Your record improved.";
+    }
+
+    jailPendingEvent = { title, message };
+    recordJailHistory(`${title}: ${message}`);
+    updateJailPanel();
+    return true;
+}
+
+function showJailEvent() {
+    if (!jailPendingEvent || document.getElementById("jail-event-dialog").open) {
+        return;
+    }
+
+    document.getElementById("jail-event-title").textContent = jailPendingEvent.title;
+    document.getElementById("jail-event-message").textContent = jailPendingEvent.message;
+    document.getElementById("jail-event-dialog").showModal();
+}
+
+function dismissJailEvent() {
+    document.getElementById("jail-event-dialog").close();
+    jailPendingEvent = null;
+    saveGame();
+}
+
+function recordJailHistory(message) {
+    const history = document.getElementById("jail-history");
+    const entry = document.createElement("p");
+    entry.className = "jail-history-entry";
+    entry.textContent = `Day ${jailDay}: ${message}`;
+    history.prepend(entry);
+    saveGame();
+}
+
+function getJailSkillPointCost() {
+    return JAIL_SKILL_POINT_COST;
+}
+
+function getJailBribeCost() {
+    return Math.max(25, JAIL_BRIBE_BASE_COST - skills.charisma * 5);
+}
+
+function isJailWaitAvailable() {
+    return jailLastWaitDay < 0 || jailDay - jailLastWaitDay >= JAIL_WAIT_COOLDOWN_DAYS;
+}
+
+function getNextJailWaitDay() {
+    return jailLastWaitDay < 0 ? jailDay : jailLastWaitDay + JAIL_WAIT_COOLDOWN_DAYS;
+}
+
+function getJailEscapeChance() {
+    const standardChance = Math.max(1, Math.min(95,
+        1 + skills.strength * 5 + skills.stealth * 4 + skills.expertise * 3 + skills.handiness * 2 -
+        Math.floor(jailSuspicion / 6) - jailBreakoutFailures * 5));
+    return jailHighSecurity
+        ? Math.max(10, standardChance - JAIL_HIGH_SECURITY_BREAKOUT_PENALTY)
+        : standardChance;
+}
+
+function getJailGoodWorkChance() {
+    return Math.max(25, Math.min(85,
+        50 + skills.networking * 3 + skills.handiness * 3 + skills.charisma * 2 - Math.floor(jailSuspicion / 4)));
+}
+
+function getJailGuardTalkChance() {
+    return Math.max(15, Math.min(90,
+        12 + skills.charisma * 9 + Math.floor(jailDisposition / 5) - Math.floor(jailSuspicion / 4)));
+}
+
+function isJailGoodReleaseReady() {
+    return jailInmateWork >= JAIL_GOOD_WORK_REQUIRED &&
+        jailGuardTalks >= JAIL_GOOD_TALKS_REQUIRED &&
+        skills.charisma >= JAIL_GOOD_CHARISMA_REQUIRED &&
+        jailDisposition >= JAIL_GOOD_RECORD_REQUIRED;
+}
+
+function updateJailPanel() {
+    if (!jailMode) {
+        return;
+    }
+
+    document.getElementById("day-label").textContent = "Day";
+    document.getElementById("dayCount").textContent = `${jailDay}/${JAIL_DAY_LIMIT}`;
+    document.getElementById("jail-cash-top").textContent = formatMoney(jailCash);
+    document.getElementById("jail-actions-top").textContent = jailActionsLeft;
+    document.getElementById("jail-suspicion-value").textContent = `${jailSuspicion}%`;
+    document.getElementById("jail-suspicion").value = jailSuspicion;
+    document.getElementById("jail-inmate-work").textContent = jailInmateWork;
+    document.getElementById("jail-guard-talks").textContent = jailGuardTalks;
+    document.getElementById("jail-escape-odds").textContent = `${getJailEscapeChance()}%`;
+    const securityStatus = document.getElementById("jail-security-status");
+    securityStatus.hidden = !jailHighSecurity;
+    securityStatus.textContent = jailHighSecurity ? "Higher-security prison" : "";
+    const jobPay = JAIL_JOB_PAY + skills.networking * 5 + skills.handiness * 3;
+    document.getElementById("jail-job-detail").textContent =
+        `Earn ${formatMoney(jobPay)} · ${getJailGoodWorkChance()}% good shift chance · 1 action`;
+    document.getElementById("jail-talk-guards-detail").textContent =
+        `${getJailGuardTalkChance()}% chance to persuade · Charisma ${skills.charisma} · 1 action`;
+    document.getElementById("jail-buy-skill-button").textContent = `Buy skill point (${formatMoney(getJailSkillPointCost())}; no action)`;
+    document.getElementById("jail-bribe-detail").textContent =
+        `${formatMoney(getJailBribeCost())} · −35 suspicion · 1 action`;
+    document.getElementById("jail-escape-detail").textContent =
+        `${getJailEscapeChance()}% chance · Strength + Stealth · 1 action${jailHighSecurity ? " · high security" : ""}`;
+    const waitDetail = document.getElementById("jail-wait-detail");
+    waitDetail.textContent = isJailWaitAvailable()
+        ? "Lower suspicion · end the day · ready now"
+        : `Lower suspicion · end the day · ready on Day ${getNextJailWaitDay()}`;
+
+    for (const button of document.querySelectorAll(".jail-action")) {
+        button.disabled = jailActionsLeft <= 0;
+    }
+    document.getElementById("jail-escape-button").disabled = jailActionsLeft <= 0;
+    document.getElementById("jail-bribe-button").disabled =
+        jailActionsLeft <= 0 || jailCash < getJailBribeCost();
+    document.getElementById("jail-wait-button").disabled = jailActionsLeft <= 0 || !isJailWaitAvailable();
+    document.getElementById("jail-buy-skill-button").disabled = jailCash < getJailSkillPointCost();
+}
+
+function finishJailChallenge(outcome) {
+    let breakoutDebtMessage = "";
+    if (outcome === "breakout") {
+        jailEscapedOnce = true;
+        if (owedBalance > 0) {
+            const startingDebt = owedBalance;
+            const interestDays = Math.max(0, jailDay - 1);
+            owedBalance = Math.round(owedBalance * Math.pow(1.5, interestDays));
+            debtDay = day;
+            lastDebtReminderDay = -1;
+            breakoutDebtMessage = ` Your debt grew from ${formatMoney(startingDebt)} to ${formatMoney(owedBalance)} with 50% interest per jail day. You have 7 days starting today to pay it.`;
+        }
+    }
+
+    jailMode = false;
+    document.body.classList.remove("jail-mode");
+    document.getElementById("jail-panel").hidden = true;
+    document.getElementById("day-label").textContent = "Day:";
+    document.getElementById("dayCount").textContent = day;
+    const endings = {
+        release: ["jail-release", "Released", "Your steady work and calm conversations convinced the guards to let you go."],
+        breakout: ["jail-breakout", "You made it out", `You have felony charges. You were on the nightly news. You have been fired.${breakoutDebtMessage}`],
+        sentence: ["jail-sentence", "Sentence served", jailDisposition >= 3
+            ? "Your steady conduct earned an early release at the end of your sentence."
+            : "You served your time and were released."],
+        transfer: ["jail-transfer", "Transferred", "The transfer bus arrived before you found a way out."]
+    };
+    const [key, title, message] = endings[outcome] || endings.transfer;
+    endGame(
+        key,
+        title,
+        `${message} Your wife is divorcing you, and she is taking the kids.`
+    );
+}
+
+function advanceJailDay() {
+    if (jailDay >= JAIL_DAY_LIMIT) {
+        finishJailChallenge("sentence");
+        return;
+    }
+
+    jailDay++;
+    jailActionsLeft = JAIL_ACTIONS_PER_DAY;
+    jailSuspicion = Math.max(0, jailSuspicion - 5);
+    recordJailHistory("The day ends. You have another chance before transfer.");
+    updateJailPanel();
+}
+
+function performJailAction(action) {
+    if (!jailMode || gameEnded || jailActionsLeft <= 0) {
+        return;
+    }
+
+    let message;
+    if (action === "job") {
+        const pay = JAIL_JOB_PAY + skills.networking * 5 + skills.handiness * 3;
+        jailCash += pay;
+        const workChance = getJailGoodWorkChance();
+        if (Math.random() * 100 < workChance) {
+            jailInmateWork = Math.min(JAIL_GOOD_WORK_REQUIRED, jailInmateWork + 1);
+            jailDisposition += 2;
+            jailSuspicion = Math.max(0, jailSuspicion - 3 - skills.stealth);
+            message = `The crew approved your work. You earned ${formatMoney(pay)} and improved your record.`;
+        } else {
+            jailDisposition--;
+            jailSuspicion = Math.min(100, jailSuspicion + 8);
+            message = `You earned ${formatMoney(pay)}, but the crew was unimpressed. Suspicion rose by 8.`;
+        }
+    } else if (action === "guards") {
+        const talkChance = getJailGuardTalkChance();
+        if (Math.random() * 100 < talkChance) {
+            jailGuardTalks = Math.min(JAIL_GOOD_TALKS_REQUIRED, jailGuardTalks + 1);
+            jailDisposition += 2;
+            jailSuspicion = Math.max(0, jailSuspicion - 4);
+            message = "The guard was persuaded by your explanation.";
+        } else {
+            jailDisposition--;
+            jailSuspicion = Math.min(100, jailSuspicion + 8);
+            message = "The guard was not persuaded. Suspicion rose by 8.";
+        }
+
+        if (isJailGoodReleaseReady()) {
+            recordJailHistory("Your good record and conversations earned you a quiet release.");
+            finishJailChallenge("release");
+            return;
+        }
+    } else if (action === "bribe") {
+        const cost = getJailBribeCost();
+        if (jailCash < cost) {
+            return;
+        }
+        jailCash -= cost;
+        jailSuspicion = Math.max(0, jailSuspicion - 35);
+        jailDisposition--;
+        message = `You paid ${formatMoney(cost)} to a guard. Suspicion fell by 35.`;
+    } else if (action === "escape") {
+        const escapeChance = getJailEscapeChance();
+        jailDisposition -= 2;
+        if (Math.random() * 100 < escapeChance) {
+            recordJailHistory(`You escaped successfully with ${escapeChance}% odds.`);
+            finishJailChallenge("breakout");
+            return;
+        } else {
+            jailBreakoutFailures++;
+            jailSuspicion = Math.min(100, jailSuspicion + 15);
+            message = `The breakout failed. Suspicion rose by 15. Escape odds were ${escapeChance}%.`;
+        }
+    } else if (action === "wait") {
+        if (!isJailWaitAvailable()) {
+            return;
+        }
+        jailSuspicion = Math.max(0, jailSuspicion - 10);
+        jailDisposition++;
+        jailLastWaitDay = jailDay;
+        jailWaitCount++;
+        jailActionsLeft = 1;
+        if (!jailHighSecurity && jailWaitCount >= JAIL_WAITS_BEFORE_HIGH_SECURITY) {
+            jailHighSecurity = true;
+            jailSuspicion = Math.min(100, jailSuspicion + 15);
+            message = "Waiting too long led to a transfer. You are now in the higher-security prison, where escape is harder.";
+        } else {
+            message = "You kept your head down and waited until tomorrow.";
+        }
+    } else {
+        return;
+    }
+
+    jailActionsLeft--;
+    recordJailHistory(message);
+    const eventTriggered = maybeTriggerJailEvent();
+    if (jailActionsLeft === 0) {
+        advanceJailDay();
+    } else {
+        updateJailPanel();
+    }
+    if (eventTriggered && jailMode) {
+        showJailEvent();
+    }
+}
+
 function restartGame() {
     if (!window.confirm("Fully restart the game? Your save, endings, achievements, and tutorial progress will be erased.") ||
         !window.confirm("Are you sure? All game progress and unlocks will be erased.")) {
@@ -673,6 +1121,7 @@ function restartGame() {
         localStorage.removeItem(TROPHY_KEY);
         localStorage.removeItem(ACHIEVEMENT_KEY);
         localStorage.removeItem(TUTORIAL_KEY);
+        localStorage.removeItem(JAIL_TUTORIAL_KEY);
         localStorage.removeItem(CARRIED_CARS_KEY);
     } catch (error) {
         restartingGame = false;
@@ -689,7 +1138,7 @@ function quitRun() {
 
     restartingGame = true;
     try {
-        const favoriteCars = garage.filter(car => car.favorite === true);
+        const favoriteCars = displayGarage;
         if (favoriteCars.length > 0) {
             localStorage.setItem(CARRIED_CARS_KEY, JSON.stringify(favoriteCars));
         } else {
@@ -1025,6 +1474,7 @@ function updateGarageFilters() {
 
 function renderGarage() {
     updateGarageFilters();
+    renderDisplayGarage();
 
     const garageList = document.getElementById("garage-list");
     const template = document.getElementById("car-template");
@@ -1076,15 +1526,13 @@ function renderGarage() {
         }, { once: true });
         carDisplay.querySelector(".car-name").textContent = `${car.make} ${car.model}`;
         favoriteButton.setAttribute("aria-pressed", String(Boolean(car.favorite)));
-        favoriteButton.setAttribute("aria-label", car.favorite
-            ? `Remove ${car.make} ${car.model} from favorites`
-            : `Favorite ${car.make} ${car.model}`);
-        favoriteButton.title = car.favorite
-            ? "Favorited - cannot be sold; carries over when you quit a run"
-            : "Favorite this car";
+        favoriteButton.setAttribute("aria-label", `Move ${car.make} ${car.model} to the display garage`);
+        favoriteButton.title = "Move to permanent display garage";
         favoriteIcon.src = car.favorite ? "assets/star-full.png" : "assets/star-empty.png";
         favoriteButton.addEventListener("click", () => {
-            car.favorite = !car.favorite;
+            car.favorite = true;
+            garage.splice(garage.indexOf(car), 1);
+            displayGarage.push(car);
             saveGame();
             renderGarage();
         });
@@ -1109,6 +1557,44 @@ function renderGarage() {
             renderGarage();
         });
         garageList.append(carDisplay);
+    }
+}
+
+function renderDisplayGarage() {
+    const displayGarageList = document.getElementById("display-garage-list");
+    displayGarageList.replaceChildren();
+
+    if (displayGarage.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "display-garage-empty";
+        emptyMessage.textContent = "No display cars yet.";
+        displayGarageList.append(emptyMessage);
+        return;
+    }
+
+    for (const car of displayGarage) {
+        const card = document.createElement("article");
+        card.className = "display-car-card";
+
+        const image = document.createElement("img");
+        image.className = "display-car-image";
+        image.src = getCarImagePath(car);
+        image.alt = `${car.make} ${car.model}`;
+        image.addEventListener("error", () => {
+            image.hidden = true;
+        }, { once: true });
+
+        const details = document.createElement("div");
+        details.className = "display-car-details";
+        const name = document.createElement("h3");
+        name.textContent = `${car.make} ${car.model}`;
+        const rarity = document.createElement("p");
+        rarity.textContent = car.rarity;
+        const condition = document.createElement("p");
+        condition.textContent = `Durability ${car.durability}%`;
+        details.append(name, rarity, condition);
+        card.append(image, details);
+        displayGarageList.append(card);
     }
 }
 
@@ -1222,7 +1708,8 @@ function renderSkills() {
     document.getElementById("skillPoints").textContent = skillPoints;
     skillList.replaceChildren();
 
-    for (const [key, name, description] of SKILL_DETAILS) {
+    const skillDetails = jailMode ? JAIL_SKILL_DETAILS : SKILL_DETAILS;
+    for (const [key, name, description] of skillDetails) {
         const row = document.createElement("div");
         row.className = "skill-row";
 
@@ -1255,6 +1742,13 @@ function upgradeSkill(key, name) {
 
     skillPoints--;
     skills[key]++;
+    if (jailMode) {
+        renderSkills();
+        updateJailPanel();
+        recordJailHistory(`${name} increased to level ${skills[key]}.`);
+        return;
+    }
+
     checkAchievements();
     updateRecommendedPrices();
     renderSkills();
@@ -1412,7 +1906,7 @@ function buySecurity() {
 
 function getRiskDetails(car) {
     const priceRisk = 12 + Math.log2(Math.max(1, car.recommendedPrice / 100)) * 16;
-    const chance = Math.floor(Math.max(8, priceRisk * Math.pow(3/4, skills.stealth)));//Math.max(1, Math.min(95, Math.round(priceRisk - skills.stealth * 8)));
+    const chance = Math.floor(Math.max(8, priceRisk * Math.pow(3/4, skills.stealth))) * 100;//Math.max(1, Math.min(95, Math.round(priceRisk - skills.stealth * 8)));
     const bandIndex = Math.min(9, Math.floor(chance / 10));
 
     return {
@@ -1523,7 +2017,8 @@ function attemptTheft(car, risk) {
         const baseFine = Math.max(10, Math.round(car.recommendedPrice * 0.2));
         const fine = Math.max(1, Math.round(baseFine * Math.max(0.25, 1 - securityLevel * 0.1)));
         balance = Math.max(0, balance - fine);
-        pendingArrestEnding = totalCaughtThefts >= ARREST_ENDING_CAUGHT && !seenEndings.has("arrest");
+        pendingArrestEnding = totalCaughtThefts >= ARREST_ENDING_CAUGHT &&
+            (!seenEndings.has("arrest") || jailEscapedOnce);
         recordHistory(`Caught stealing the ${car.make} ${car.model}; fined ${formatMoney(fine)}.`);
         document.getElementById("fine-title").textContent = "Caught stealing";
         document.getElementById("fine-message").textContent = `You were fined ${formatMoney(fine)}. Balance: ${formatMoney(balance)}.`;
@@ -1596,7 +2091,8 @@ function stopGameTimers() {
 }
 
 function startGameTimers() {
-    if (gameEnded) {
+    if (gameEnded || jailMode) {
+        stopGameTimers();
         return;
     }
 
@@ -1626,7 +2122,8 @@ function updateTutorialSpotlight() {
         return;
     }
 
-    const target = document.querySelector(TUTORIAL_STEPS[tutorialStep].target);
+    const tutorialSteps = jailMode ? JAIL_TUTORIAL_STEPS : TUTORIAL_STEPS;
+    const target = document.querySelector(tutorialSteps[tutorialStep].target);
     if (!target) {
         throw new Error(`Tutorial target not found: ${TUTORIAL_STEPS[tutorialStep].target}`);
     }
@@ -1664,13 +2161,14 @@ function updateTutorialSpotlight() {
 }
 
 function renderTutorialStep() {
-    const step = TUTORIAL_STEPS[tutorialStep];
+    const tutorialSteps = jailMode ? JAIL_TUTORIAL_STEPS : TUTORIAL_STEPS;
+    const step = tutorialSteps[tutorialStep];
     document.getElementById("tutorial-progress").textContent =
-        `Step ${tutorialStep + 1} of ${TUTORIAL_STEPS.length}`;
+        `Step ${tutorialStep + 1} of ${tutorialSteps.length}`;
     document.getElementById("tutorial-title").textContent = step.title;
     document.getElementById("tutorial-description").textContent = step.description;
     document.getElementById("tutorial-next").textContent =
-        tutorialStep === TUTORIAL_STEPS.length - 1 ? "Finish" : "Next";
+        tutorialStep === tutorialSteps.length - 1 ? "Finish" : "Next";
     updateTutorialSpotlight();
 }
 
@@ -1684,12 +2182,14 @@ function startTutorial() {
 function finishTutorial() {
     document.getElementById("tutorial-overlay").hidden = true;
     try {
-        localStorage.setItem(TUTORIAL_KEY, "completed");
+        localStorage.setItem(jailMode ? JAIL_TUTORIAL_KEY : TUTORIAL_KEY, "completed");
     } catch (error) {
         setSaveStatus(`Could not save tutorial progress: ${error.message}`);
     }
-    if (!gameEnded) {
+    if (!gameEnded && !jailMode) {
         startGameTimers();
+    } else if (jailMode && jailWelcomeComplete && jailPendingEvent) {
+        showJailEvent();
     }
 }
 
@@ -1698,7 +2198,8 @@ document.getElementById("stealButton").addEventListener("click", openTheftPicker
 document.getElementById("debt").addEventListener("click", payDebt);
 document.getElementById("tutorial-skip").addEventListener("click", finishTutorial);
 document.getElementById("tutorial-next").addEventListener("click", () => {
-    if (tutorialStep === TUTORIAL_STEPS.length - 1) {
+    const tutorialSteps = jailMode ? JAIL_TUTORIAL_STEPS : TUTORIAL_STEPS;
+    if (tutorialStep === tutorialSteps.length - 1) {
         finishTutorial();
         return;
     }
@@ -1715,9 +2216,21 @@ document.getElementById("fine-dismiss").addEventListener("click", () => {
     if (pendingArrestEnding) {
         pendingArrestEnding = false;
         endGame("arrest", "Arrested", "After repeated thefts, the police caught up with you. Your dealership run is over.");
-        document.getElementById("ending-continue").hidden = true;
     }
 });
+document.getElementById("jail-welcome-continue").addEventListener("click", beginJailChallenge);
+document.getElementById("jail-welcome-dialog").addEventListener("cancel", event => event.preventDefault());
+document.getElementById("jail-event-dismiss").addEventListener("click", dismissJailEvent);
+document.getElementById("jail-event-dialog").addEventListener("cancel", event => {
+    event.preventDefault();
+    dismissJailEvent();
+});
+document.getElementById("jail-buy-skill-button").addEventListener("click", buyJailSkillPoint);
+document.getElementById("jail-job-button").addEventListener("click", () => performJailAction("job"));
+document.getElementById("jail-talk-guards-button").addEventListener("click", () => performJailAction("guards"));
+document.getElementById("jail-bribe-button").addEventListener("click", () => performJailAction("bribe"));
+document.getElementById("jail-escape-button").addEventListener("click", () => performJailAction("escape"));
+document.getElementById("jail-wait-button").addEventListener("click", () => performJailAction("wait"));
 document.getElementById("ending-continue").addEventListener("click", continueAfterEnding);
 document.getElementById("ending-restart").addEventListener("click", quitRun);
 document.getElementById("bankrupt-loan").addEventListener("click", acceptLoan);
@@ -1777,16 +2290,38 @@ document.getElementById("garage-make-filter").addEventListener("change", renderG
 document.getElementById("garage-model-filter").addEventListener("change", renderGarage);
 
 renderSkills();
-renderGarage();
-updateAll();
 updateStealButton();
 updateSleepButton();
+if (jailMode) {
+    document.body.classList.add("jail-mode");
+    document.getElementById("jail-panel").hidden = false;
+    updateJailPanel();
+} else {
+    renderGarage();
+    updateAll();
+}
 if (gameEnded && activeEndingKey) {
     if (activeEndingKey === "taxes") {
         document.getElementById("ending-continue").hidden = true;
     }
     if (!document.getElementById("ending-dialog").open) {
         document.getElementById("ending-dialog").showModal();
+    }
+} else if (jailMode) {
+    if (!jailWelcomeComplete) {
+        document.getElementById("jail-welcome-dialog").showModal();
+    } else {
+        let jailTutorialComplete = false;
+        try {
+            jailTutorialComplete = localStorage.getItem(JAIL_TUTORIAL_KEY) === "completed";
+        } catch (error) {
+            setSaveStatus(`Could not load the jail tutorial: ${error.message}`);
+        }
+        if (!jailTutorialComplete) {
+            startTutorial();
+        } else if (jailPendingEvent) {
+            showJailEvent();
+        }
     }
 } else {
     let tutorialComplete = false;

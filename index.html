@@ -13,14 +13,16 @@
     <!-- Top Banner -->
     <div class="topBanner">
         <p id="gameName">Z-Moto</p>
-        <p id="day">Day: <span id="dayCount">1</span></p>
+        <p id="day"><span id="day-label">Day:</span> <span id="dayCount">1</span></p>
         <p id="time">Time: <span id="hours">08</span>:00</p>
         <div class="zDolDisplay">
             <img src="assets/z-dol.png">
             <p id="excl" onclick="payDebt()" style="display: none;">!</p>
             <button id="debt" class="debt-button" type="button" title="Pay debt" style="display: none;"></button>
             <span id="z-dols">100</span>
+            <span class="jail-cash-display">Cash: <strong id="jail-cash-top">ℤ0</strong></span>
         </div>
+        <p class="jail-actions-display">Actions: <strong id="jail-actions-top">3</strong></p>
         <p id="quota">Quota: <span id="quota-status">None (Days 1-3)</span></p>
         <div class="header-controls">
             <button id="settings-button" class="icon-button header-icon-button settings-button" type="button" aria-label="Settings" aria-haspopup="dialog" title="Settings">
@@ -41,8 +43,56 @@
     <!-- Skill Upgrades -->
     <div class="skills">
         <p id="skillLabel">Skill Points: <span id="skillPoints">0</span></p>
+        <div class="jail-suspicion-panel">
+            <label for="jail-suspicion">Suspicion <strong id="jail-suspicion-value">0%</strong></label>
+            <progress id="jail-suspicion" max="100" value="0" aria-label="Suspicion level"></progress>
+        </div>
         <div class="skill-list" id="skill-list"></div>
     </div>
+
+    <section class="jail-panel" id="jail-panel" hidden aria-label="Jail escape challenge">
+        <header class="jail-header">
+            <div>
+                <p class="jail-kicker">7-DAY TRANSFER DEADLINE</p>
+                <h1>Cell Block</h1>
+            </div>
+            <span class="jail-security-status" id="jail-security-status" hidden></span>
+        </header>
+        <div class="jail-stats" aria-label="Jail route progress">
+            <article class="jail-stat"><span>Good shifts</span><strong id="jail-inmate-work">0</strong><small>work crew shifts build a clean record</small></article>
+            <article class="jail-stat"><span>Guard talks</span><strong id="jail-guard-talks">0</strong><small>only persuaded guards count</small></article>
+            <article class="jail-stat"><span>Breakout odds</span><strong id="jail-escape-odds">60%</strong><small>Strength and Stealth improve your chance</small></article>
+        </div>
+        <div class="jail-economy" role="group" aria-label="Jail economy">
+            <p>Work crew earns cash. Buy skill points for ℤ75 each; purchases do not use an action.</p>
+            <button id="jail-buy-skill-button" type="button">Buy skill point (ℤ75; no action)</button>
+        </div>
+        <div class="jail-actions" role="group" aria-label="Jail actions">
+            <button class="jail-action" id="jail-job-button" type="button"><strong>Work with inmates</strong><small id="jail-job-detail">Earn ℤ45 · quality varies · 1 action</small></button>
+            <button class="jail-action" id="jail-talk-guards-button" type="button"><strong>Talk to guards</strong><small id="jail-talk-guards-detail">Persuasion chance · 1 action</small></button>
+            <button class="jail-action" id="jail-bribe-button" type="button"><strong>Bribe a guard</strong><small id="jail-bribe-detail">ℤ100 · −35 suspicion · 1 action</small></button>
+            <button class="jail-action" id="jail-escape-button" type="button"><strong>Break out</strong><small id="jail-escape-detail">Strength + Stealth · 1 action · risky</small></button>
+            <button class="jail-action" id="jail-wait-button" type="button"><strong>Wait quietly</strong><small id="jail-wait-detail">Lower suspicion · end the day · ready now</small></button>
+        </div>
+        <p class="jail-event-hint">Random events can affect your cash, suspicion, or record. Their effects appear in a popup.</p>
+        <div class="jail-history" id="jail-history" aria-live="polite"></div>
+    </section>
+
+    <dialog class="notice-dialog jail-special-dialog" id="jail-welcome-dialog" aria-labelledby="jail-welcome-title">
+        <div class="notice-dialog-content">
+            <h2 id="jail-welcome-title">Welcome to jail</h2>
+            <p>Welcome to jail. Things are different here, and your skill points have been reset.</p>
+            <p>Your skill levels are free to reassign. Earn a quiet release, break out, or wait until your sentence is served on Day 7.</p>
+            <button id="jail-welcome-continue" type="button">Enter cell block</button>
+        </div>
+    </dialog>
+    <dialog class="notice-dialog jail-special-dialog" id="jail-event-dialog" aria-labelledby="jail-event-title">
+        <div class="notice-dialog-content">
+            <h2 id="jail-event-title"></h2>
+            <p id="jail-event-message"></p>
+            <button id="jail-event-dismiss" type="button">Continue</button>
+        </div>
+    </dialog>
 
     <!-- Upgrades -->
     <div class="upgrades">
@@ -96,6 +146,10 @@
             </label>
         </div>
         <div class="garage-list" id="garage-list" aria-live="polite"></div>
+        <section class="display-garage" aria-label="Display garage">
+            <h2>Display Garage</h2>
+            <div class="display-garage-list" id="display-garage-list" aria-live="polite"></div>
+        </section>
         <template id="car-template">
             <article class="car-display">
                 <button class="car-image-action" type="button" aria-label="Repair this car">
