@@ -224,7 +224,9 @@ function getMaxSecurityLevel() {
 function updateRecommendedPrices() {
     const allCars = [...garage, ...currentShipment, ...pendingShipments.flatMap(shipment => shipment.cars)];
     for (const car of allCars) {
+        const listingMarkup = car.price / Math.max(1, car.recommendedPrice);
         car.recommendedPrice = calculateRecommendedPrice(car);
+        car.price = Math.max(0, Math.round(car.recommendedPrice * listingMarkup));
     }
 }
 
@@ -813,15 +815,13 @@ function updateAll() {
         let shipment = pendingShipments[i];
 
         if (day > shipment.arrivalDay || (day === shipment.arrivalDay && hour >= shipment.arrivalHour)) {
-            if (currentShipment.length + shipment.cars.length <= 5 * getShipmentSize()) {
-                for (const car of shipment.cars) {
-                    const deliveryDamage = Math.floor(Math.random() * 21);
-                    updateCarDurability(car, car.durability - deliveryDamage);
-                }
-                currentShipment.push(...shipment.cars);
-                pendingShipments.splice(i, 1);
-                recordHistory(`Shipment arrived. ${shipment.cars.length} cars are ready in the cupboard; delivery damage may be up to 20%.`);
+            for (const car of shipment.cars) {
+                const deliveryDamage = Math.floor(Math.random() * 21);
+                updateCarDurability(car, car.durability - deliveryDamage);
             }
+            currentShipment.push(...shipment.cars);
+            pendingShipments.splice(i, 1);
+            recordHistory(`Shipment arrived. ${shipment.cars.length} cars are ready in the cupboard; delivery damage may be up to 20%.`);
         }
     }
 
@@ -1517,10 +1517,6 @@ function openTheftPicker() {
 
 function attemptTheft(car, risk) {
     document.getElementById("theft-dialog").close();
-    if (theftsToday >= getDailyTheftLimit()) {
-        updateStealButton();
-        return;
-    }
 
     if (Math.random() * 100 < risk.chance) {
         totalCaughtThefts++;
