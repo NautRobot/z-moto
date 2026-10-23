@@ -214,7 +214,7 @@ function getNightlyRobberyChance() {
     if (garage.length === 0) {
         return 0;
     }
-    return Math.min(90, Math.max(0, 20 + garage.length * 10 - securityLevel * 5));
+    return Math.min(90, Math.max(0, 20 + garage.length * 10 - securityLevel * 15));
 }
 
 function getMaxSecurityLevel() {
