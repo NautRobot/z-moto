@@ -49,6 +49,25 @@ Reject the loan. - Zeke (Broken Dollar Bill)
 */
 
 /*
+Ending specials:
+
+Jail escape game (continue after getting arrested), or quit run to avoid it:
+Choosing to continue after the arrest starts a separate escape challenge instead of returning to the dealership. The player wakes up in a cell with a short number of in-game days before transfer. Each day has a few actions: observe guard routines, talk to inmates, search for useful items, or attempt part of the escape. Actions advance time and can raise suspicion, so repeating the safest option is not enough. Skills are repurposed for the challenge: Stealth lowers suspicion, Handiness turns found objects into tools, Networking reveals inmate help, Charisma can bluff guards, Expertise identifies patrol patterns, and Strength helps with physical obstacles. Getting caught during an escape attempt restarts that attempt from its checkpoint; reaching the outside ends the challenge. Choosing to quit instead abandons the current run as usual. The jail challenge does not use dealership money, cars, shipments, upgrades, or debt.
+
+nothing
+
+Switch game pacing to feel more stressful, add more responsibilities/things to do, change what skills do and change buyables:
+This is a harder dealership ruleset, not just faster clock ticks. Shorten the workday and make time advance during more actions, then add a daily checklist alongside the existing one-car sales quota: handle customer appointments, prepare damaged trade-ins, receive scheduled shipments, and pay daily operating costs. Missed appointments lose reputation, unfinished repairs reduce the next day's buyer interest, and unpaid costs add debt. Give each day a clear morning planning phase and a closing-time deadline so the player has to choose what to leave undone. Rework skills to support these new tasks: Expertise speeds appraisal and repairs, Networking improves appointment and shipment quality, Handiness restores more condition, Charisma helps close difficult sales, Stealth creates risky ways to cut costs, and Strength expands capacity but raises operating costs. Replace or supplement the current buyables with staff, advertising, repair equipment, and security; make each cost money over time or take up a limited upgrade slot. Keep the same cars and basic sell/list flow, but make every day a tradeoff between sales, upkeep, and preparation.
+
+Minimize game to be a smaller set of things to do, so it feels like a quick minigame. After all, you left for an easier job:
+Replace the long dealership run with a short shift-based task that can be finished in a few minutes. Each shift gives the player a small queue of customer cars and a target: inspect a car, pick a fair price, and either sell it quickly or spend limited time repairing it for a better payout. Customers leave if kept waiting, and a poor price or rushed repair costs points, so the main choice is speed versus value. Remove day-long progression, debt, loans, shipments, stealing, garage expansion, and persistent upgrade shopping from this mode. Convert skills into simple per-shift assists rather than levels to grind: Charisma gives one price negotiation, Expertise shows a useful appraisal hint, Handiness makes one repair faster, Networking adds a customer, Stealth allows one risky shortcut, and Strength lets the player handle a larger vehicle. Score the shift on money earned, customers served, and mistakes; award a medal for meeting the target and let the player immediately start another shift.
+
+nothing
+nothing
+nothing
+*/
+
+/*
 FEATURES:
 Quota - for fired ending - 1 car a day 
 10 Minute days

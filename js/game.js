@@ -1508,6 +1508,10 @@ function openTheftPicker() {
         theftOptions.append(option);
     }
 
+    theftsToday++;
+    updateStealButton();
+    updateAll();
+
     theftDialog.showModal();
 }
 
@@ -1517,9 +1521,6 @@ function attemptTheft(car, risk) {
         updateStealButton();
         return;
     }
-
-    theftsToday++;
-    updateStealButton();
 
     if (Math.random() * 100 < risk.chance) {
         totalCaughtThefts++;
